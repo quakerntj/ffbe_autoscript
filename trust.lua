@@ -23,11 +23,15 @@ addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
 --addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
 addTextView("選擇關卡：")newRow()
 addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
+SCAN_INTERVAL = 2
+addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
 FRIEND = false
 addCheckBox("FRIEND", "選擇朋友", false)newRow()
 BUY = false
 addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
 dialogShow("Trust Master Maker".." - "..X.." × "..Y)
+
+setScanInterval(SCAN_INTERVAL)
 
 if (BUY) then
     toast("Will buy stamina")
@@ -116,7 +120,9 @@ switch = {
             else
                 if (BUY and BUY_LOOP > 0 and middleRight:existsClick("Use_Gem.png")) then
                     lowerUpperRight:existsClick("Buy_Yes.png")
+                    wait(2)
                     lowerLowerMiddle:existsClick("06_Next.png")
+                    wait(1)
                     upperLower:existsClick(FRIEND_NAME)
                     STEP = 2
 
@@ -126,7 +132,7 @@ switch = {
                     toast('體力不足，等待中...')
                     setScanInterval(10)
                     wait(30)
-                    setScanInterval(2)
+                    setScanInterval(SCAN_INTERVAL)
                 end
             end
         else
@@ -146,7 +152,7 @@ switch = {
             if (lowerLowerMiddle:existsClick("06_Next1.png")) then
                 ON_AUTO = false
                 STEP = 4
-                setScanInterval(2)
+                setScanInterval(SCAN_INTERVAL)
             end
         elseif (lowerLowerLeft:existsClick("04_Auto.png")) then
             ON_AUTO = true
