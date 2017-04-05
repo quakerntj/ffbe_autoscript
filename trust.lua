@@ -89,6 +89,9 @@ STEP = 1
 CLEAR = 0                -- Stage clear times
 ON_AUTO = false
 ERROR_COUNT = 0
+TIMER = Timer()			-- Timer of loop
+TIMER2 = Timer()		-- Timer of step
+
 if (QUEST == 1) then
     QUEST_NAME= "01_The_Temple_of_Earth_Entry.png"
 elseif (QUEST == 2) then
@@ -105,6 +108,7 @@ end
 switch = {
     [  1 ] = function()
         if (existsClick(QUEST_NAME)) then
+            TIMER2:set()
             if (lowerLowerMiddle:existsClick("06_Next.png")) then
                 if (upperLower:existsClick(FRIEND_NAME)) then
                     STEP = 2
@@ -112,12 +116,14 @@ switch = {
             else
                 if (BUY and BUY_LOOP > 0 and middleRight:existsClick("Use_Gem.png")) then
                     lowerUpperRight:existsClick("Buy_Yes.png")
-                    existsClick("09_Return.png") -- leave quest and redo step 1
+                    lowerLowerMiddle:existsClick("06_Next.png")
+                    upperLower:existsClick(FRIEND_NAME)
+                    STEP = 2
+
                     print("使用寶石回復體力")
                     BUY_LOOP = BUY_LOOP - 1
                 elseif (lowerUpperMiddle:existsClick("Stamina_Back.png")) then
                     toast('體力不足，等待中...')
-                    print("Wait for stamina")
                     setScanInterval(10)
                     wait(30)
                     setScanInterval(2)
@@ -131,7 +137,7 @@ switch = {
         end
     end,
     [ 2 ] = function()
-        if (existsClick("03_Go.png")) then
+        if (lowerLowerMiddle:existsClick("03_Go.png")) then
             STEP = 3
         end
     end,
@@ -142,7 +148,7 @@ switch = {
                 STEP = 4
                 setScanInterval(2)
             end
-        elseif (lowerLowerLeft:existsClick("04_Auto1.png")) then
+        elseif (lowerLowerLeft:existsClick("04_Auto.png")) then
             ON_AUTO = true
             setScanInterval(10)
         end
@@ -150,22 +156,23 @@ switch = {
     [ 4 ] = function()
         if (upperRight:existsClick("07_Next_2.png")) then
             wait(1)
-        elseif (lowerLowerMiddle:exists("06_Next.png")) then
+        else
             STEP = 5
         end
     end,
     [ 5 ] = function()
         if (lowerLowerMiddle:existsClick("06_Next.png")) then
-            lowerLowerMiddle:existsClick("06_Next.png")
-            existsClick("08_No_Friend.png", 5)
+            --lowerLowerMiddle:existsClick("06_Next.png")
+            if (not FRIEND) then
+                existsClick("08_No_Friend.png", 5)
+            end
             STEP = 1
             CLEAR = CLEAR + 1
-        elseif (exists("01_The_Temple_of_Earth.png")) then
-            STEP = 1
         end
     end
 }
 
+TIMER:set()
 repeat
     switch[STEP]()
     if (middle:exists("Communication_Error.png")) then
@@ -174,7 +181,7 @@ repeat
     FINISH = false
     if (CLEAR == CLEAR_LIMIT) then    -- Step repeat check
         FINISH = true
-        print("Quest clear:"..CLEAR.."/"..CLEAR_LIMIT)
+        print("Quest clear:"..CLEAR.."/"..CLEAR_LIMIT.."("..TIMER:check()..")")
     elseif (ERROR_COUNT == 5) then
         FINISH = true
         print("程式錯誤，腳本跳出")
@@ -182,7 +189,7 @@ repeat
     else
         FINISH = false
         if (STEP == 1) then
-            toast("Quest clear:"..CLEAR.."/"..CLEAR_LIMIT)
+            toast("Quest clear:"..CLEAR.."/"..CLEAR_LIMIT.."("..TIMER2:check()..")")
         end
     end
 until FINISH
