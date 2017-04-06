@@ -17,26 +17,6 @@ X = screen:getX()
 Y = 2560 -- screen:getY()
 DEBUG = false
 
-dialogInit()
-CLEAR_LIMIT = 999                -- Step now
-addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
---addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
-addTextView("選擇關卡：")newRow()
-addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
-SCAN_INTERVAL = 2
-addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
-FRIEND = false
-addCheckBox("FRIEND", "選擇朋友", false)newRow()
-BUY = false
-addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
-dialogShow("Trust Master Maker".." - "..X.." × "..Y)
-
-setScanInterval(SCAN_INTERVAL)
-
-if (BUY) then
-    toast("Will buy stamina")
-end
-
 X12 = X / 2
 X14 = X / 4
 X34 = X * 3 / 4
@@ -48,6 +28,11 @@ Y14 = Y / 4
 Y34 = Y * 3 / 4
 Y13 = Y / 3
 Y23 = Y * 2 / 3
+
+Y18 = Y / 8
+Y38 = Y * 3 / 8
+Y58 = Y * 5 / 8
+Y78 = Y * 7 / 8
 
 all = Region(0,0,X,Y)
 -- 1/2
@@ -88,6 +73,48 @@ lowerLowerRight = Region(X12, Y34, X, Y)
 
 lowerUpperMiddle = Region(X13, Y12, X23, Y34)
 lowerLowerMiddle = Region(X13, Y34, X23, Y)
+lowerLowerLower = Region(0, Y78, X, Y)
+
+-- ========== Dialogs ================
+
+dialogInit()
+FUNC=1
+addRadioGroup("FUNC", 1)addRadioButton("刷土廟", 1)addRadioButton("自動REPEAT", 2)newRow()
+
+REPEAT_COUNT = 4
+addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)newRow()
+
+dialogShow("選擇自動化功能")
+
+if FUNC == 1 then
+    dialogInit()
+    CLEAR_LIMIT = 999                -- Step now
+    addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
+    --addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
+    addTextView("選擇關卡：")newRow()
+    addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
+    SCAN_INTERVAL = 2
+    addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
+    FRIEND = false
+    addCheckBox("FRIEND", "選擇朋友", false)newRow()
+    BUY = false
+    addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
+    dialogShow("Trust Master Maker".." - "..X.." × "..Y)
+
+    if (BUY) then
+        toast("Will buy stamina")
+    end
+    setScanInterval(SCAN_INTERVAL)
+else
+    repeat
+        if (lowerLowerLower:existsClick("Repeat.png"))
+            REPEAT_COUNT = REPEAT_COUNT - 1
+        end
+        FINISH = REPEAT_COUNT == 0
+    until FINISH
+    scriptExit("Repeat finish")
+end
+
 -- ==========  main program ===========
 STEP = 1
 CLEAR = 0                -- Stage clear times
@@ -170,7 +197,7 @@ switch = {
         if (lowerLowerMiddle:existsClick("06_Next.png")) then
             --lowerLowerMiddle:existsClick("06_Next.png")
             if (not FRIEND) then
-                existsClick("08_No_Friend.png", 5)
+                existsClick("08_No_Friend1.png", 5)
             end
             STEP = 1
             CLEAR = CLEAR + 1
