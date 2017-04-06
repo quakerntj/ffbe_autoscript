@@ -14,7 +14,7 @@ setImmersiveMode(true)
 setBrightness(10)
 screen = getAppUsableScreenSize()
 X = screen:getX()
-Y = 2560 -- screen:getY()
+Y = screen:getY()
 DEBUG = false
 
 X12 = X / 2
@@ -107,7 +107,7 @@ if FUNC == 1 then
     setScanInterval(SCAN_INTERVAL)
 else
     repeat
-        if (lowerLowerLower:existsClick("Repeat.png"))
+        if (lowerLowerLower:existsClick("Repeat.png")) then
             REPEAT_COUNT = REPEAT_COUNT - 1
         end
         FINISH = REPEAT_COUNT == 0
