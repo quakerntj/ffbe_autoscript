@@ -43,11 +43,21 @@ X34 = X * 3 / 4
 X13 = X / 3
 X23 = X * 2 / 3
 
+X15 = X / 5
+X25 = X * 2 / 5
+X35 = X * 3 / 5
+X45 = X * 4 / 5
+
 Y12 = Y / 2
 Y14 = Y / 4
 Y34 = Y * 3 / 4
 Y13 = Y / 3
 Y23 = Y * 2 / 3
+
+Y18 = Y / 8
+Y38 = Y * 3 / 8
+Y58 = Y * 5 / 8
+Y78 = Y * 7 / 8
 
 all = Region(0,0,X,Y)
 -- 1/2
@@ -88,6 +98,8 @@ lowerLowerRight = Region(X12, Y34, X, Y)
 
 lowerUpperMiddle = Region(X13, Y12, X23, Y34)
 lowerLowerMiddle = Region(X13, Y34, X23, Y)
+lowerLowerNarrowMiddle = Region(X25, Y34, X35, Y78)
+X35X55Y18Y12 = Region(X35,X,Y18,Y12)
 -- ==========  main program ===========
 STEP = 1
 CLEAR = 0                -- Stage clear times
@@ -160,14 +172,14 @@ switch = {
         end
     end,
     [ 4 ] = function()
-        if (upperRight:existsClick("07_Next_2.png")) then
+        if (X35X55Y18Y12:existsClick("07_Next_2.png")) then
             wait(1)
         else
             STEP = 5
         end
     end,
     [ 5 ] = function()
-        if (lowerLowerMiddle:existsClick("06_Next.png")) then
+        if (lowerLowerNarrowMiddle:existsClick("06_Next.png")) then
             --lowerLowerMiddle:existsClick("06_Next.png")
             if (not FRIEND) then
                 existsClick("08_No_Friend.png", 5)
