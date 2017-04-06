@@ -11,7 +11,7 @@ Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析�
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
 Settings:set("MinSimilarity", 0.65)
 setImmersiveMode(true)
-setBrightness(10)
+setBrightness(0)
 screen = getAppUsableScreenSize()
 X = screen:getX()
 Y = screen:getY()
@@ -115,10 +115,6 @@ if FUNC == 1 then
     BUY = false
     addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
     dialogShow("Trust Master Maker".." - "..X.." × "..Y)
-
-    if (BUY) then
-        toast("Will buy stamina")
-    end
     setScanInterval(SCAN_INTERVAL)
 elseif FUNC == 2 then
     repeat
@@ -206,9 +202,9 @@ switch = {
             else
                 if (BUY and BUY_LOOP > 0 and middleRight:existsClick("Use_Gem.png")) then
                     lowerUpperRight:existsClick("Buy_Yes.png")
-                    wait(2)
-                    lowerLowerMiddle:existsClick("06_Next.png")
-                    wait(1)
+                    wait(5)
+                    ResultNext:existsClick("06_Next.png")
+                    wait(3)
                     upperLower:existsClick(FRIEND_NAME)
                     STEP = 2
 
