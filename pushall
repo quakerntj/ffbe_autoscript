@@ -1,0 +1,2 @@
+#!/bin/bash
+adb push ../ffbe_trust /sdcard/AnkuLua/ffbe_trust/

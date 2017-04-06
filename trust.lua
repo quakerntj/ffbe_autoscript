@@ -14,28 +14,8 @@ setImmersiveMode(true)
 setBrightness(10)
 screen = getAppUsableScreenSize()
 X = screen:getX()
-Y = 2560 -- screen:getY()
+Y = screen:getY()
 DEBUG = false
-
-dialogInit()
-CLEAR_LIMIT = 999                -- Step now
-addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
---addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
-addTextView("選擇關卡：")newRow()
-addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
-SCAN_INTERVAL = 2
-addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
-FRIEND = false
-addCheckBox("FRIEND", "選擇朋友", false)newRow()
-BUY = false
-addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
-dialogShow("Trust Master Maker".." - "..X.." × "..Y)
-
-setScanInterval(SCAN_INTERVAL)
-
-if (BUY) then
-    toast("Will buy stamina")
-end
 
 X12 = X / 2
 X14 = X / 4
@@ -100,6 +80,49 @@ lowerUpperMiddle = Region(X13, Y12, X23, Y34)
 lowerLowerMiddle = Region(X13, Y34, X23, Y)
 lowerLowerNarrowMiddle = Region(X25, Y34, X35, Y78)
 X35X55Y18Y12 = Region(X35,X,Y18,Y12)
+
+lowerLowerLower = Region(0, Y78, X, Y)
+
+-- ========== Dialogs ================
+
+dialogInit()
+FUNC=1
+addRadioGroup("FUNC", 1)addRadioButton("刷土廟", 1)addRadioButton("自動REPEAT", 2)newRow()
+
+REPEAT_COUNT = 4
+addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)newRow()
+
+dialogShow("選擇自動化功能")
+
+if FUNC == 1 then
+    dialogInit()
+    CLEAR_LIMIT = 999                -- Step now
+    addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
+    --addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
+    addTextView("選擇關卡：")newRow()
+    addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
+    SCAN_INTERVAL = 2
+    addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
+    FRIEND = false
+    addCheckBox("FRIEND", "選擇朋友", false)newRow()
+    BUY = false
+    addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
+    dialogShow("Trust Master Maker".." - "..X.." × "..Y)
+
+    if (BUY) then
+        toast("Will buy stamina")
+    end
+    setScanInterval(SCAN_INTERVAL)
+else
+    repeat
+        if (lowerLowerLower:existsClick("Repeat.png")) then
+            REPEAT_COUNT = REPEAT_COUNT - 1
+        end
+        FINISH = REPEAT_COUNT == 0
+    until FINISH
+    scriptExit("Repeat finish")
+end
+
 -- ==========  main program ===========
 STEP = 1
 CLEAR = 0                -- Stage clear times
@@ -182,7 +205,7 @@ switch = {
         if (lowerLowerNarrowMiddle:existsClick("06_Next.png")) then
             --lowerLowerMiddle:existsClick("06_Next.png")
             if (not FRIEND) then
-                existsClick("08_No_Friend.png", 5)
+                existsClick("08_No_Friend1.png", 5)
             end
             STEP = 1
             CLEAR = CLEAR + 1
