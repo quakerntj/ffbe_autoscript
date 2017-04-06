@@ -83,11 +83,18 @@ X35X55Y18Y12 = Region(X35,X,Y18,Y12)
 
 lowerLowerLower = Region(0, Y78, X, Y)
 
+ResultExp = Region(560, 1000, 1150, 1400)
+ResultNext = Region(530, 2100, 900, 2350)
+
 -- ========== Dialogs ================
 
 dialogInit()
 FUNC=1
-addRadioGroup("FUNC", 1)addRadioButton("刷土廟", 1)addRadioButton("自動REPEAT", 2)newRow()
+addRadioGroup("FUNC", 1)
+addRadioButton("刷土廟", 1)
+addRadioButton("自動REPEAT", 2)
+addRadioButton("自動移動", 3)
+newRow()
 
 REPEAT_COUNT = 4
 addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)newRow()
@@ -113,7 +120,7 @@ if FUNC == 1 then
         toast("Will buy stamina")
     end
     setScanInterval(SCAN_INTERVAL)
-else
+elseif FUNC == 2 then
     repeat
         if (lowerLowerLower:existsClick("Repeat.png")) then
             REPEAT_COUNT = REPEAT_COUNT - 1
@@ -121,6 +128,50 @@ else
         FINISH = REPEAT_COUNT == 0
     until FINISH
     scriptExit("Repeat finish")
+elseif FUNC == 3 then
+	left = Location(380, 1170)
+	right = Location(1210, 1170)
+	up = Location(800, 1570)
+	down = Location(800, 770)
+	BattleIndicator = Region(0, 1350, 40, 1600)
+	ResultIndicator = Region(380, 900, 600, 1030)
+	direction = false
+	LastBattle = Timer()
+	setScanInterval(1)
+	repeat
+		if (BattleIndicator:exists("Battle.png")) then
+			toast("In Battle")
+			repeat
+				if (ResultIndicator:existsClick("BattleFinishResult.png")) then
+					LastBattle:set()
+				    break
+				end
+			until true
+		end
+		if LastBattle:check() > 60 then
+			break;
+		end
+		if direction then
+			click(left)
+			click(left)
+			click(up)
+			click(right)
+			click(right)
+			click(down)
+		else
+			click(right)
+			click(right)
+			click(down)
+			click(left)
+			click(left)
+			click(up)
+		end
+		direction = not direction
+		FINISH = false
+	until FINISH
+	vibrate(1)
+	
+	scriptExit("Repeat walk finish")
 end
 
 -- ==========  main program ===========
@@ -195,16 +246,16 @@ switch = {
         end
     end,
     [ 4 ] = function()
-        if (X35X55Y18Y12:existsClick("07_Next_2.png")) then
+        if (ResultExp:existsClick("07_Next_2.png")) then
             wait(1)
         else
             STEP = 5
         end
     end,
     [ 5 ] = function()
-        if (lowerLowerNarrowMiddle:existsClick("06_Next.png")) then
+        if (ResultNext:existsClick("06_Next.png")) then
             --lowerLowerMiddle:existsClick("06_Next.png")
-            if (not FRIEND) then
+            if (FRIEND) then
                 existsClick("08_No_Friend1.png", 5)
             end
             STEP = 1
