@@ -142,11 +142,11 @@ elseif FUNC == 3 then
 					LastBattle:set()
 				    break
 				end
-			until true
+			until false
 		end
-		if LastBattle:check() > 60 then
-			break;
-		end
+--		if LastBattle:check() > 60 then
+--			break;
+--		end
 		if direction then
 			click(left)
 			click(left)
