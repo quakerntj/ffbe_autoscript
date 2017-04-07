@@ -129,11 +129,11 @@ function move(pattern)
     end
     
     if inverse == 1 then
-        revDS = {}
-        for i,v in ipairs(DS) do
-          revDS[11 - i] = 10 - v
+        invDirs = {}
+        for i,v in ipairs(directions) do
+          invDirs[11 - i] = 10 - v
         end
-        DS = revDS
+        directions = invDirs
     end
     for i, v in ipairs(directions) do
         click(DTABLE[v])
