@@ -128,7 +128,7 @@ function move(pattern)
         directions = {4, 7, 8, 9, 6, 3, 2, 1, 6, 4}
     end
     
-    if reverse == 1 then
+    if inverse == 1 then
         revDS = {}
         for i,v in ipairs(DS) do
           revDS[11 - i] = 10 - v
