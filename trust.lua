@@ -117,13 +117,13 @@ function move(pattern)
     directions = {}
     dirsCount = 0
     if pattern == 1 then -- \
-        directions = {4, 4, 7, 8, 9, 6, 6, 3, 2, 1}
+        directions = {4, 4, 7, 8, 9, 6, 3, 2, 1, 4}
     elseif pattern == 2 then -- |
-        directions = {8, 8, 8, 6, 4, 2, 2, 2, 4, 6}
+        directions = {8, 8, 8, 6, 4, 2, 8, 8, 4, 6}
     elseif pattern == 3 then -- /
-        directions = {4, 4, 1, 2, 3, 6, 6, 9, 8, 7}
+        directions = {4, 4, 1, 2, 3, 6, 9, 8, 7, 4}
     elseif pattern == 4 then -- -
-        directions = {4, 4, 4, 8, 2, 6, 6, 6, 8, 2}
+        directions = {4, 4, 4, 8, 2, 8, 2, 8, 4, 4}
     elseif pattern == 5 then -- O
         directions = {4, 7, 8, 9, 6, 3, 2, 1, 6, 4}
     end
@@ -213,9 +213,10 @@ elseif FUNC == 3 then
 			until false
 		end
 		if LastBattle:check() > 120 then
-		    -- Notify user should move
-        	vibrate(1)
+		    -- Notify user should move to next area
+        	vibrate(2)
         	timeout = timeout + 1
+        	print(timeout)
         	if timeout >= TIMEOUT_LIMIT then
         	    break
         	end
@@ -223,9 +224,9 @@ elseif FUNC == 3 then
 		move(MOVE_PATTERN)
 		FINISH = false
 	until FINISH
-	vibrate(1)
+	vibrate(2)
 	wait(1)
-	vibrate(1)
+	vibrate(2)
 	
 	scriptExit("Repeat walk finish")
 end
