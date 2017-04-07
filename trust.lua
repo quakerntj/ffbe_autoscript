@@ -11,7 +11,6 @@ Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析�
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
 Settings:set("MinSimilarity", 0.65)
 setImmersiveMode(true)
-setBrightness(0)
 screen = getAppUsableScreenSize()
 X = screen:getX()
 Y = screen:getY()
@@ -84,7 +83,7 @@ X35X55Y18Y12 = Region(X35,X,Y18,Y12)
 lowerLowerLower = Region(0, Y78, X, Y)
 
 ResultExp = Region(560, 1000, 1150, 1400)
-ResultNext = Region(530, 2100, 900, 2350)
+ResultNext = Region(600, 2200, 840, 2300)
 
 -- 
 function move(pattern)
@@ -145,11 +144,16 @@ end
 dialogInit()
 FUNC=1
 addRadioGroup("FUNC", 1)
-addRadioButton("刷土廟", 1)
-addRadioButton("自動點擊REPEAT", 2)
-addRadioButton("自動移動", 3)
-newRow()
+    addRadioButton("刷土廟", 1)
+    addRadioButton("自動點擊REPEAT", 2)
+    addRadioButton("自動移動", 3)
+    newRow()
+BRIGHTNESS = false
+addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
 dialogShow("選擇自動化功能")
+if BRIGHTNESS then
+    setBrightness(0)
+end
 
 if FUNC == 1 then
     dialogInit()
@@ -264,7 +268,7 @@ switch = {
                 if (BUY and BUY_LOOP > 0 and middleRight:existsClick("Use_Gem.png")) then
                     lowerUpperRight:existsClick("Buy_Yes.png")
                     wait(5)
-                    ResultNext:existsClick("06_Next.png")
+                    lowerLowerMiddle:existsClick("06_Next.png")
                     wait(3)
                     upperLower:existsClick(FRIEND_NAME)
                     STEP = 2
@@ -304,14 +308,13 @@ switch = {
     end,
     [ 4 ] = function()
         if (ResultExp:existsClick("07_Next_2.png")) then
-            wait(1)
         else
             STEP = 5
         end
     end,
     [ 5 ] = function()
-        if (ResultNext:existsClick("06_Next.png")) then
-            --lowerLowerMiddle:existsClick("06_Next.png")
+        -- Result Next is bigger than other next...
+        if (ResultNext:existsClick("Result_Next.png")) then
             if (FRIEND) then
                 existsClick("08_No_Friend1.png", 5)
             end
