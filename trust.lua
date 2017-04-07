@@ -6,11 +6,15 @@
 -- To change this template use File | Settings | File Templates.
 --
 
--- ========== Settings ================
+-- ========== Initial Settings ================
 Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析度。根據compareByWidth的值的值設定成寬度或高度
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
-Settings:set("MinSimilarity", 0.65)
-setImmersiveMode(true)
+Settings:set("MinSimilarity", 0.85)
+
+setDragDropTiming(400, 800)			--downMs: 開始移動前壓不住不動幾毫秒	upMs: 最後放開前停住幾毫秒
+setDragDropStepCount(3)				--stepCount: 從啟始點到目的地分幾步移動完
+setDragDropStepInterval(100)	--intervalMs: 每次移動間停留幾毫秒
+
 screen = getAppUsableScreenSize()
 X = screen:getX()
 Y = screen:getY()
@@ -82,8 +86,27 @@ X35X55Y18Y12 = Region(X35,X,Y18,Y12)
 
 lowerLowerLower = Region(0, Y78, X, Y)
 
+BIL = {  -- Battle item location
+    Location(360, 1700),  -- Unit 1
+    Location(360, 1960),  -- Unit 2
+    Location(360, 2200),  -- Unit 3
+    Location(1080, 1700), -- Unit 4
+    Location(1080, 1960), -- Unit 5
+    Location(1080, 2200), -- Friend
+}
+
 ResultExp = Region(560, 1000, 1150, 1400)
-ResultNext = Region(600, 2200, 840, 2300)
+--ResultNext = Region(600, 2200, 840, 2300)
+ResultItemNextLocation = Location(720, 2250)
+
+BattleLocationInit = false
+BattleLocationItems = {}
+
+function AttackAllClick(order)
+    for i,unit in ipairs(order) do
+        click(BIL[unit])
+    end
+end
 
 -- 
 function move(pattern)
@@ -148,12 +171,14 @@ addRadioGroup("FUNC", 1)
     addRadioButton("自動點擊REPEAT", 2)
     addRadioButton("自動移動", 3)
     newRow()
-BRIGHTNESS = false
+BRIGHTNESS = false IMMERSIVE = true
 addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
+addCheckBox("IMMERSIVE", "Immersive", true)newRow()
 dialogShow("選擇自動化功能")
 if BRIGHTNESS then
     setBrightness(0)
 end
+setImmersiveMode(IMMERSIVE)
 
 if FUNC == 1 then
     dialogInit()
@@ -308,13 +333,15 @@ switch = {
     end,
     [ 4 ] = function()
         if (ResultExp:existsClick("07_Next_2.png")) then
-        else
+            wait(0.5)
+            click(getLastMatch())
             STEP = 5
         end
     end,
     [ 5 ] = function()
         -- Result Next is bigger than other next...
-        if (ResultNext:existsClick("Result_Next.png")) then
+        wait(1)
+        if (click(ResultItemNextLocation)) then
             if (FRIEND) then
                 existsClick("08_No_Friend1.png", 5)
             end
