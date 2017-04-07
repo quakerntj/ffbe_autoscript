@@ -109,6 +109,42 @@ function AttackAllClick(order)
 end
 
 -- 
+--[[
+    DXN = 10 -- X NAGTIVE
+    DXC = 720 -- X CENTER
+    DXP = 1430 -- X POSITIVE
+
+    DYN = 150 -- Y NAGATIVE
+    DYC = 1170 -- Y CENTER
+    DYP = 2400 -- Y POSITIVE
+    
+    DTABLE = {}
+    DTABLE[4] = Location(DXN, DYC)
+    DTABLE[7] = Location(DXN / 2, DYP / 2)
+    DTABLE[8] = Location(DXC, DYP)
+    DTABLE[9] = Location(DXP / 2, DYP / 2)
+    DTABLE[6] = Location(DXP, DYC)
+    DTABLE[3] = Location(DXP / 2, DYN / 2)
+    DTABLE[2] = Location(DXC, DYN)
+    DTABLE[1] = Location(DXN / 2, DYN / 2)
+
+    DTABLE[5] = Location(DXC, DYC)
+    
+    directions = {}
+    dirsCount = 0
+    if pattern == 1 then -- \
+        directions = {7, 4, 7, 8, 7, 7, 7, 8, 7, 4}
+    elseif pattern == 2 then -- |
+        directions = {8, 8, 7, 8, 9, 8, 8, 8, 7, 9}
+    elseif pattern == 3 then -- /
+        directions = {9, 9, 8, 9, 6, 9, 9, 9, 8, 6}
+    elseif pattern == 4 then -- -
+        directions = {4, 4, 1, 4, 4, 4, 7, 4, 1, 4}
+    elseif pattern == 5 then -- O
+        directions = {4, 7, 8, 9, 6, 3, 2, 1, 6, 4}
+    end
+--]]
+
 function move(pattern)
     math.randomseed(os.time())
     if pattern == 6 then
@@ -116,23 +152,23 @@ function move(pattern)
     end
     inverse = math.random(0,1)
 
-    DXP = 380 -- X POSITIVE  TODO oops i mess up the positive and nagtive
+    DXN = 380 -- X NAGTIVE
     DXC = 800 -- X CENTER
-    DXN = 1210 -- X NAGTIVE
+    DXP = 1210 -- X POSITIVE
 
-    DYP = 770 -- Y POSITIVE
+    DYN = 770 -- Y NAGATIVE
     DYC = 1170 -- Y CENTER
-    DYN = 1570 -- Y NAGATIVE
+    DYP = 1570 -- Y POSITIVE
     
     DTABLE = {}
-    DTABLE[4] = Location(DXP, DYC)
-    DTABLE[7] = Location(DXP, DYN)
-    DTABLE[8] = Location(DXC, DYN)
-    DTABLE[9] = Location(DXN, DYN)
-    DTABLE[6] = Location(DXN, DYC)
-    DTABLE[3] = Location(DXN, DYP)
-    DTABLE[2] = Location(DXC, DYP)
-    DTABLE[1] = Location(DXP, DYP)
+    DTABLE[4] = Location(DXN, DYC)
+    DTABLE[7] = Location(DXN, DYP)
+    DTABLE[8] = Location(DXC, DYP)
+    DTABLE[9] = Location(DXP, DYP)
+    DTABLE[6] = Location(DXP, DYC)
+    DTABLE[3] = Location(DXP, DYN)
+    DTABLE[2] = Location(DXC, DYN)
+    DTABLE[1] = Location(DXN, DYN)
 
     DTABLE[5] = Location(DXC, DYC)
     
