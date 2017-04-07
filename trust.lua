@@ -146,13 +146,9 @@ dialogInit()
 FUNC=1
 addRadioGroup("FUNC", 1)
 addRadioButton("刷土廟", 1)
-addRadioButton("自動REPEAT", 2)
+addRadioButton("自動點擊REPEAT", 2)
 addRadioButton("自動移動", 3)
 newRow()
-
-REPEAT_COUNT = 4
-addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)newRow()
-
 dialogShow("選擇自動化功能")
 
 if FUNC == 1 then
@@ -171,6 +167,10 @@ if FUNC == 1 then
     dialogShow("Trust Master Maker".." - "..X.." × "..Y)
     setScanInterval(SCAN_INTERVAL)
 elseif FUNC == 2 then
+    REPEAT_COUNT = 4
+    dialogInit()
+    addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)
+    dialogShow("Auto Click Repeat")
     repeat
         if (lowerLowerLower:existsClick("Repeat.png")) then
             REPEAT_COUNT = REPEAT_COUNT - 1
