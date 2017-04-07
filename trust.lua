@@ -86,6 +86,60 @@ lowerLowerLower = Region(0, Y78, X, Y)
 ResultExp = Region(560, 1000, 1150, 1400)
 ResultNext = Region(530, 2100, 900, 2350)
 
+-- 
+function move(pattern)
+    math.randomseed(os.time())
+    if pattern == 6 then
+        pattern = math.random(1,5)
+    end
+    inverse = math.random(0,1)
+
+    DXP = 380 -- X POSITIVE  TODO oops i mess up the positive and nagtive
+    DXC = 800 -- X CENTER
+    DXN = 1210 -- X NAGTIVE
+
+    DYP = 770 -- Y POSITIVE
+    DYC = 1170 -- Y CENTER
+    DYN = 1570 -- Y NAGATIVE
+    
+    DTABLE = {}
+    DTABLE[4] = Location(DXP, DYC)
+    DTABLE[7] = Location(DXP, DYN)
+    DTABLE[8] = Location(DXC, DYN)
+    DTABLE[9] = Location(DXN, DYN)
+    DTABLE[6] = Location(DXN, DYC)
+    DTABLE[3] = Location(DXN, DYP)
+    DTABLE[2] = Location(DXC, DYP)
+    DTABLE[1] = Location(DXP, DYP)
+
+    DTABLE[5] = Location(DXC, DYC)
+    
+    directions = {}
+    dirsCount = 0
+    if pattern == 1 then -- \
+        directions = {4, 4, 7, 8, 9, 6, 6, 3, 2, 1}
+    elseif pattern == 2 then -- |
+        directions = {8, 8, 8, 6, 4, 2, 2, 2, 4, 6}
+    elseif pattern == 3 then -- /
+        directions = {4, 4, 1, 2, 3, 6, 6, 9, 8, 7}
+    elseif pattern == 4 then -- -
+        directions = {4, 4, 4, 8, 2, 6, 6, 6, 8, 2}
+    elseif pattern == 5 then -- O
+        directions = {4, 7, 8, 9, 6, 3, 2, 1, 6, 4}
+    end
+    
+    if reverse == 1 then
+        revDS = {}
+        for i,v in ipairs(DS) do
+          revDS[11 - i] = 10 - v
+        end
+        DS = revDS
+    end
+    for i, v in ipairs(directions) do
+        click(DTABLE[v])
+    end
+end
+
 -- ========== Dialogs ================
 
 dialogInit()
@@ -125,46 +179,52 @@ elseif FUNC == 2 then
     until FINISH
     scriptExit("Repeat finish")
 elseif FUNC == 3 then
-	left = Location(380, 1170)
-	right = Location(1210, 1170)
-	up = Location(800, 1570)
-	down = Location(800, 770)
+
+    dialogInit()
+        MOVE_PATTERN = 1
+        TIMEOUT_LIMIT = 5
+        addTextView("第一場戰鬥請記得手動按Auto")newRow()
+        addTextView("每隔120秒無戰鬥會振動, 每振動")addEditNumber("TIMEOUT_LIMIT", 5)
+        addTextView("次會中止script")newRow()
+        addRadioGroup("MOVE_PATTERN", 1)
+            addRadioButton("\\", 1)
+            addRadioButton("|", 2)
+            addRadioButton("/", 3) newRow()
+
+            addRadioButton("-", 4)
+            addRadioButton("O", 5)
+            addRadioButton("Rnd", 6) newRow()
+    dialogShow("Auto move pattern")
+
 	BattleIndicator = Region(0, 1350, 40, 1600)
 	ResultIndicator = Region(380, 900, 600, 1030)
-	direction = false
 	LastBattle = Timer()
 	setScanInterval(1)
+	timeout = 0
 	repeat
 		if (BattleIndicator:exists("Battle.png")) then
 			toast("In Battle")
 			repeat
-				if (ResultIndicator:existsClick("BattleFinishResult.png")) then
+				if (not BattleIndicator:exists("Battle.png")) then
+    				ResultIndicator:existsClick("BattleFinishResult.png")
 					LastBattle:set()
 				    break
 				end
 			until false
 		end
---		if LastBattle:check() > 60 then
---			break;
---		end
-		if direction then
-			click(left)
-			click(left)
-			click(up)
-			click(right)
-			click(right)
-			click(down)
-		else
-			click(right)
-			click(right)
-			click(down)
-			click(left)
-			click(left)
-			click(up)
+		if LastBattle:check() > 120 then
+		    -- Notify user should move
+        	vibrate(1)
+        	timeout = timeout + 1
+        	if timeout >= TIMEOUT_LIMIT then
+        	    break
+        	end
 		end
-		direction = not direction
+		move(MOVE_PATTERN)
 		FINISH = false
 	until FINISH
+	vibrate(1)
+	wait(1)
 	vibrate(1)
 	
 	scriptExit("Repeat walk finish")
