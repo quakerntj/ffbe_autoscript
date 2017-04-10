@@ -11,8 +11,8 @@ setDragDropStepInterval(100)	--intervalMs: 每次移動間停留幾毫秒
 
 screen = getAppUsableScreenSize()
 X = screen:getX()
-Y = screen:getY()
-DEBUG = false
+Y = 2560 --screen:getY() will not get right full screen size.
+DEBUG = true
 
 X12 = X / 2
 X14 = X / 4
@@ -31,7 +31,7 @@ Y34 = Y * 3 / 4
 Y13 = Y / 3
 Y23 = Y * 2 / 3
 
-Y18 = Y / 8
+Y18 = Y / 8.0
 Y38 = Y * 3 / 8
 Y58 = Y * 5 / 8
 Y78 = Y * 7 / 8
@@ -61,13 +61,13 @@ R33_1121 = Region(X13, Y23, X13, Y13)
 R14_0111 = Region(0, Y14, X, Y12)
 R23_1111 = Region(X12, Y13, X12, Y13)
 R34_1311 = Region(X13, Y34, X13, Y14)
-R24_0311 = Region(0, Y34, X12, Y14)
-R24_1211 = Region(X12, Y24, X12, Y14)
+R28_0711 = Region(0, Y78, X12, Y18)
+R24_1211 = Region(X12, Y12, X12, Y14)
 R34_1211 = Region(X13, Y12, X13, Y14)
 R58_2611 = Region(X25, Y34, X15, Y18)
 R18_0711 = Region(0, Y78, X, Y18)
 
-ScrollRegion = Region(1410, 1592 1430, 2296)
+ScrollRegion = Region(1410, 1592, 1430, 2296)
 
 
 BIL = {  -- Battle item location
@@ -194,7 +194,9 @@ addRadioGroup("FUNC", 1)
 BRIGHTNESS = false IMMERSIVE = true
 addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
 addCheckBox("IMMERSIVE", "Immersive", true)newRow()
+addCheckBox("DEBUG", "Debug mode", true)newRow()
 dialogShow("選擇自動化功能")
+
 if BRIGHTNESS then
     setBrightness(0)
 end
@@ -213,6 +215,10 @@ if FUNC == 1 then
     addCheckBox("FRIEND", "選擇朋友", false)newRow()
     BUY = false
     addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
+    if DEBUG then
+        STEP = 1
+        addTextView("Begin STEP")addEditNumber("STEP", 1)newRow()
+    end
     dialogShow("Trust Master Maker".." - "..X.." × "..Y)
     setScanInterval(SCAN_INTERVAL)
 elseif FUNC == 2 then
@@ -250,6 +256,7 @@ elseif FUNC == 3 then
 	LastBattle = Timer()
 	setScanInterval(1)
 	timeout = 0
+	battleCount = 0
 	repeat
 		if (BattleIndicator:exists("Battle.png")) then
 			toast("In Battle")
@@ -260,10 +267,13 @@ elseif FUNC == 3 then
 				    break
 				end
 			until false
+			battleCount = battleCount + 1
+			toast("Battle count: "..battleCount)
 		end
 		if LastBattle:check() > 120 then
-		    -- Notify user should move to next area
+		    -- Notify user should move to next area, and reset timer for next 120s
         	vibrate(2)
+			LastBattle:set()
         	timeout = timeout + 1
         	print(timeout)
         	if timeout >= TIMEOUT_LIMIT then
@@ -281,7 +291,9 @@ elseif FUNC == 3 then
 end
 
 -- ==========  main program ===========
-STEP = 1
+if not DEBUG then
+    STEP = 1
+end
 CLEAR = 0                -- Stage clear times
 ON_AUTO = false
 ERROR_COUNT = 0
@@ -301,6 +313,7 @@ if (FRIEND) then
 else
     FRIEND_NAME = "02_No_friend.png";
 end
+
 switch = {
     [  1 ] = function()
         if (existsClick(QUEST_NAME)) then
@@ -346,7 +359,7 @@ switch = {
                 STEP = 4
                 setScanInterval(SCAN_INTERVAL)
             end
-        elseif (R24_0311:existsClick("04_Auto.png")) then
+        elseif (R28_0711:existsClick("04_Auto.png")) then
             ON_AUTO = true
             setScanInterval(10)
         end
@@ -373,6 +386,9 @@ switch = {
 
 TIMER:set()
 repeat
+    if DEBUG then
+        toast("step"..STEP)
+    end
     switch[STEP]()
     if (R13_0111:exists("Communication_Error.png")) then
         R13_0111:existsClick("OK.png")
