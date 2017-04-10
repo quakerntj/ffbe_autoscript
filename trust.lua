@@ -1,10 +1,4 @@
---
--- Created by IntelliJ IDEA.
--- User: vic
--- Date: 2016/10/31
--- Time: 下午 01:38
--- To change this template use File | Settings | File Templates.
---
+-- Edit by Quaker NTj
 
 -- ========== Initial Settings ================
 Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析度。根據compareByWidth的值的值設定成寬度或高度
@@ -42,49 +36,39 @@ Y38 = Y * 3 / 8
 Y58 = Y * 5 / 8
 Y78 = Y * 7 / 8
 
-all = Region(0,0,X,Y)
--- 1/2
-upper = Region(0, 0, X, Y12)
-center= Region(0, Y14, X, Y34)
-lower = Region(0, Y12, X, Y)
-left  = Region(0, 0, X12, Y)
-right = Region(X12, 0, X, Y)
--- 1/3
-middle = Region(0, Y/3, X, 2*Y/3)
-lowerMiddle = Region(X13, Y23, X23, Y)
--- 1/4
-upperLeft  = Region(0, 0, X12, Y12)
-upperRight = Region(X12,0, X, Y12)
-lowerLeft  = Region(0, Y12, X12, Y)
-lowerRight = Region(X12,Y12, X, Y)
-upperUpper = Region(0, 0, X, Y14)
-upperLower = Region(0, Y14, X, Y12)
-lowerUpper = Region(0, Y12, X, Y34)
-lowerLower = Region(0, Y34, X, Y)
-leftLeft   = Region(0, 0, X14, Y)
-leftRight  = Region(X14,0, X12, Y)
-rightLeft  = Region(X12,0, X34, Y)
-rightRight = Region(X34,0, X, Y)
+--[[
+    Naming Rule
+    Single offset, length
+    For Example
+        X13 = X / 3
+        Y24 = Y12 = Y / 2
 
--- 1/6
-middleRight = Region(X12, Y13, X, Y23)
+    Region
+        R[Split X][Split Y]_[Piece X Offset][Piece X Length][Piece Y Offset][Piece Y Length]
+    For example
+        R42_1111 = Region(X14, Y12, X14, Y12)
+        R42_021 = Region(X14, Y12, X24, Y12)  -- X has 2 piece
+--]]
+        
+    
+R12_0011 = Region(0, 0, X, Y12)
+R12_0111 = Region(0, Y12, X, Y12)
+R21_0011 = Region(0, 0, X12, Y)
+R21_1011 = Region(X12, 0, X12, Y)
+R14_0112 = Region(0, Y12, X14, Y12)
+R13_0111 = Region(0, Y13, X, Y13)
+R33_1121 = Region(X13, Y23, X13, Y13)
+R14_0111 = Region(0, Y14, X, Y12)
+R23_1111 = Region(X12, Y13, X12, Y13)
+R34_1311 = Region(X13, Y34, X13, Y14)
+R24_0311 = Region(0, Y34, X12, Y14)
+R24_1211 = Region(X12, Y24, X12, Y14)
+R34_1211 = Region(X13, Y12, X13, Y14)
+R58_2611 = Region(X25, Y34, X15, Y18)
+R18_0711 = Region(0, Y78, X, Y18)
 
--- 1/8
-upperUpperLeft  = Region(0, 0, X12, Y14)
-upperUpperRight = Region(X12, 0, X, Y14)
-upperLowerLeft  = Region(0, Y14, X12, Y12)
-upperLowerRight = Region(X12, Y14, X, Y12)
-lowerUpperLeft  = Region(0, Y12, X12, Y34)
-lowerUpperRight = Region(X12, Y12, X, Y34)
-lowerLowerLeft  = Region(0, Y34, X12, Y)
-lowerLowerRight = Region(X12, Y34, X, Y)
+ScrollRegion = Region(1410, 1592 1430, 2296)
 
-lowerUpperMiddle = Region(X13, Y12, X23, Y34)
-lowerLowerMiddle = Region(X13, Y34, X23, Y)
-lowerLowerNarrowMiddle = Region(X25, Y34, X35, Y78)
-X35X55Y18Y12 = Region(X35,X,Y18,Y12)
-
-lowerLowerLower = Region(0, Y78, X, Y)
 
 BIL = {  -- Battle item location
     Location(360, 1700),  -- Unit 1
@@ -237,7 +221,7 @@ elseif FUNC == 2 then
     addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)
     dialogShow("Auto Click Repeat")
     repeat
-        if (lowerLowerLower:existsClick("Repeat.png")) then
+        if (R18_0711:existsClick("Repeat.png")) then
             REPEAT_COUNT = REPEAT_COUNT - 1
         end
         FINISH = REPEAT_COUNT == 0
@@ -321,22 +305,22 @@ switch = {
     [  1 ] = function()
         if (existsClick(QUEST_NAME)) then
             TIMER2:set()
-            if (lowerLowerMiddle:existsClick("06_Next.png")) then
-                if (upperLower:existsClick(FRIEND_NAME)) then
+            if (R34_1311:existsClick("06_Next.png")) then
+                if (R14_0111:existsClick(FRIEND_NAME)) then
                     STEP = 2
                 end
             else
-                if (BUY and BUY_LOOP > 0 and middleRight:existsClick("Use_Gem.png")) then
-                    lowerUpperRight:existsClick("Buy_Yes.png")
+                if (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
+                    R24_1211:existsClick("Buy_Yes.png")
                     wait(5)
-                    lowerLowerMiddle:existsClick("06_Next.png")
+                    R34_1311:existsClick("06_Next.png")
                     wait(3)
-                    upperLower:existsClick(FRIEND_NAME)
+                    R14_0111:existsClick(FRIEND_NAME)
                     STEP = 2
 
                     print("使用寶石回復體力")
                     BUY_LOOP = BUY_LOOP - 1
-                elseif (lowerUpperMiddle:existsClick("Stamina_Back.png")) then
+                elseif (R34_1211:existsClick("Stamina_Back.png")) then
                     toast('體力不足，等待中...')
                     setScanInterval(10)
                     wait(30)
@@ -351,18 +335,18 @@ switch = {
         end
     end,
     [ 2 ] = function()
-        if (lowerLowerMiddle:existsClick("03_Go.png")) then
+        if (R34_1311:existsClick("03_Go.png")) then
             STEP = 3
         end
     end,
     [ 3 ] = function()
         if (ON_AUTO) then
-            if (lowerLowerMiddle:existsClick("06_Next1.png")) then
+            if (R34_1311:existsClick("06_Next1.png")) then
                 ON_AUTO = false
                 STEP = 4
                 setScanInterval(SCAN_INTERVAL)
             end
-        elseif (lowerLowerLeft:existsClick("04_Auto.png")) then
+        elseif (R24_0311:existsClick("04_Auto.png")) then
             ON_AUTO = true
             setScanInterval(10)
         end
@@ -390,8 +374,8 @@ switch = {
 TIMER:set()
 repeat
     switch[STEP]()
-    if (middle:exists("Communication_Error.png")) then
-        middle:existsClick("OK.png")
+    if (R13_0111:exists("Communication_Error.png")) then
+        R13_0111:existsClick("OK.png")
     end
     FINISH = false
     if (CLEAR == CLEAR_LIMIT) then    -- Step repeat check
