@@ -1,15 +1,14 @@
 -- Edit by Quaker NTj
 
-
 ScrollRegion = Region(1410, 1592, 20, 704)
 
 BIL = {  -- Battle item location
-    Location(360, 1700),  -- Unit 1
-    Location(360, 1960),  -- Unit 2
-    Location(360, 2200),  -- Unit 3
-    Location(1080, 1700), -- Unit 4
-    Location(1080, 1960), -- Unit 5
-    Location(1080, 2200), -- Friend
+    Location(360, 1700),  -- Item 1
+    Location(360, 1960),  -- Item 2
+    Location(360, 2200),  -- Item 3
+    Location(1080, 1700), -- Item 4
+    Location(1080, 1960), -- Item 5
+    Location(1080, 2200), -- Item 6
 }
 
 BattleLocationInit = false
@@ -31,14 +30,15 @@ setmetatable(BattleUnit, {
   end,
 })
 
-function BattleUnit.new(scene, location)
+function BattleUnit.new(region)
 	local self = setmetatable({}, BattleUnit)
-	self.scene = scene
-	self.location = location
-	self.swipeRight = Location(location.getX() + 250, location.getY())
-	self.swipeUp = Location(location.getX(), location.getY() - 250)
-	self.swipeDown = Location(location.getX(), location.getY() + 250)
-	self.swipeLeft = Location(location.getX() - 250, location.getY())
+	self.region = region
+	local location = region.center
+	local swipeStep = 250
+	self.swipeRight = Location(location.getX() + swipeStep, location.getY())
+	self.swipeUp = Location(location.getX(), location.getY() - swipeStep)
+	self.swipeDown = Location(location.getX(), location.getY() + swipeStep)
+	self.swipeLeft = Location(location.getX() - swipeStep, location.getY())
 	self.PageStatus = {
 		UnitPage = 0,
 		AbilityPage = 1,
@@ -56,6 +56,10 @@ function BattleUnit.new(scene, location)
 function BattleUnit:reset() {
 	self.pageStatus = 0
 	self.actionStatus = 0
+}
+
+function BattleUnit:checkExists() {
+    return not ((self.region:exists("Limit.png")) == nil)
 }
 
 function BattleUnit:submit() {
@@ -128,16 +132,33 @@ setmetatable(BattleScene, {
   end,
 })
 
-function BattleScene.new(scene, location)
+function BattleScene.new()
 	local self = setmetatable({}, BattleScene)
-	
+	local BattleUnitRegions = {
+        -- 715x256
+        Region(2, 1586, 717, 1843) -- Unit 1
+        Region(2, 1844, 717, 2102) -- Unit 2
+        Region(2, 2103, 717, 2360) -- Unit 3
+        Region(719, 1846, 1434, 1843) -- Unit 4
+        Region(719, 1846, 1434, 2102) -- Unit 5
+        Region(719, 1846, 1434, 2360) -- Unit 6  Friend
+    }
+    
+    self.units = {
+        BattleUnit(self, BattleUnitRegions[1]),
+        BattleUnit(self, BattleUnitRegions[2]),
+        BattleUnit(self, BattleUnitRegions[3]),
+        BattleUnit(self, BattleUnitRegions[4]),
+        BattleUnit(self, BattleUnitRegions[5]),
+        BattleUnit(self, BattleUnitRegions[6])
+    }
 end
 
 -- Item index is in left-right-nextline order
 function BattleScene:chooseItemByIndex(idx) {
-	page = idx / 9
-	result self.page:gotoPage(page)
-	result = self.page.click(idx)
+--	page = idx / 9
+--	result self.page:gotoPage(page)
+--	result = self.page.click(idx)
 }
 
 function BattleScene:chooseItemByImage(pattern) {
