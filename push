@@ -1,2 +1,7 @@
 #!/bin/bash
-adb push trust.lua /sdcard/AnkuLua/ffbe_trust/
+for lua in `ls -1 *.lua`
+do
+    echo
+    echo $lua
+    adb push $lua /sdcard/AnkuLua/ffbe_trust/
+done
