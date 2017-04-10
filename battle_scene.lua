@@ -1,3 +1,25 @@
+-- Edit by Quaker NTj
+
+
+ScrollRegion = Region(1410, 1592, 20, 704)
+
+BIL = {  -- Battle item location
+    Location(360, 1700),  -- Unit 1
+    Location(360, 1960),  -- Unit 2
+    Location(360, 2200),  -- Unit 3
+    Location(1080, 1700), -- Unit 4
+    Location(1080, 1960), -- Unit 5
+    Location(1080, 2200), -- Friend
+}
+
+BattleLocationInit = false
+BattleLocationItems = {}
+
+function AttackAllClick(order)
+    for i,unit in ipairs(order) do
+        click(BIL[unit])
+    end
+end
 
 -- ======== Class Battle Unit/Scene =======
 BattleUnit = {}

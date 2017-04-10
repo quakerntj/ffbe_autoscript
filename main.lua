@@ -19,69 +19,6 @@ DEBUG = true
 require("screen_config")
 require("trust")
 
-ScrollRegion = Region(1410, 1592, 1430, 2296)
-
-
-BIL = {  -- Battle item location
-    Location(360, 1700),  -- Unit 1
-    Location(360, 1960),  -- Unit 2
-    Location(360, 2200),  -- Unit 3
-    Location(1080, 1700), -- Unit 4
-    Location(1080, 1960), -- Unit 5
-    Location(1080, 2200), -- Friend
-}
-
-ResultExp = Region(560, 1000, 1150, 1400)
---ResultNext = Region(600, 2200, 840, 2300)
-ResultItemNextLocation = Location(720, 2250)
-
-BattleLocationInit = false
-BattleLocationItems = {}
-
-function AttackAllClick(order)
-    for i,unit in ipairs(order) do
-        click(BIL[unit])
-    end
-end
-
--- 
---[[
-    DXN = 10 -- X NAGTIVE
-    DXC = 720 -- X CENTER
-    DXP = 1430 -- X POSITIVE
-
-    DYN = 150 -- Y NAGATIVE
-    DYC = 1170 -- Y CENTER
-    DYP = 2400 -- Y POSITIVE
-    
-    DTABLE = {}
-    DTABLE[4] = Location(DXN, DYC)
-    DTABLE[7] = Location(DXN / 2, DYP / 2)
-    DTABLE[8] = Location(DXC, DYP)
-    DTABLE[9] = Location(DXP / 2, DYP / 2)
-    DTABLE[6] = Location(DXP, DYC)
-    DTABLE[3] = Location(DXP / 2, DYN / 2)
-    DTABLE[2] = Location(DXC, DYN)
-    DTABLE[1] = Location(DXN / 2, DYN / 2)
-
-    DTABLE[5] = Location(DXC, DYC)
-    
-    directions = {}
-    dirsCount = 0
-    if pattern == 1 then -- \
-        directions = {7, 4, 7, 8, 7, 7, 7, 8, 7, 4}
-    elseif pattern == 2 then -- |
-        directions = {8, 8, 7, 8, 9, 8, 8, 8, 7, 9}
-    elseif pattern == 3 then -- /
-        directions = {9, 9, 8, 9, 6, 9, 9, 9, 8, 6}
-    elseif pattern == 4 then -- -
-        directions = {4, 4, 1, 4, 4, 4, 7, 4, 1, 4}
-    elseif pattern == 5 then -- O
-        directions = {4, 7, 8, 9, 6, 3, 2, 1, 6, 4}
-    end
---]]
-
-
 function move(pattern)
     math.randomseed(os.time())
     if pattern == 6 then
@@ -131,9 +68,6 @@ addCheckBox("IMMERSIVE", "Immersive", true)newRow()
 addCheckBox("DEBUG", "Debug mode", true)newRow()
 dialogShow("選擇自動化功能")
 
-if BRIGHTNESS then
-    setBrightness(0)
-end
 setImmersiveMode(IMMERSIVE)
 
 if FUNC == 1 then
@@ -156,6 +90,9 @@ if FUNC == 1 then
     dialogShow("Trust Master Maker".." - "..X.." × "..Y)
     setScanInterval(SCAN_INTERVAL)
     
+    if BRIGHTNESS then
+        setBrightness(0)
+    end
     trust()
     scriptExit("Trust finish")
 elseif FUNC == 2 then
@@ -163,6 +100,11 @@ elseif FUNC == 2 then
     dialogInit()
     addTextView("Repeat次數：")addEditNumber("REPEAT_COUNT", 4)
     dialogShow("Auto Click Repeat")
+
+    if BRIGHTNESS then
+        setBrightness(0)
+    end
+
     repeat
         if (R18_0711:existsClick("Repeat.png")) then
             REPEAT_COUNT = REPEAT_COUNT - 1
@@ -189,13 +131,17 @@ elseif FUNC == 3 then
             addRadioButton("Rnd", 6) newRow()
     dialogShow("Auto move pattern")
 
-	BattleIndicator = Region(0, 1350, 40, 1600)
-	ResultIndicator = Region(380, 900, 600, 1030)
-	LastBattle = Timer()
+    if BRIGHTNESS then
+        setBrightness(0)
+    end
+
+	local BattleIndicator = Region(0, 1350, 40, 250)
+	local ResultIndicator = Region(380, 900, 220, 130)
+	local LastBattle = Timer()
 	setScanInterval(1)
-	timeout = 0
-	battleCount = 0
-	isTouchDown = false
+	local timeout = 0
+	local battleCount = 0
+	local isTouchDown = false
 	repeat
 	    -- TODO If enter door
 		if (BattleIndicator:exists("Battle.png")) then

@@ -9,6 +9,10 @@ function trust()
     ERROR_COUNT = 0
     TIMER = Timer()			-- Timer of loop
     TIMER2 = Timer()		-- Timer of step
+    
+    local ResultExp = Region(560, 1000, 590, 400)
+    --local ResultNext = Region(600, 2200, 240, 100)
+    local ResultItemNextLocation = Location(720, 2250)
 
     if (QUEST == 1) then
         QUEST_NAME= "01_The_Temple_of_Earth_Entry.png"
