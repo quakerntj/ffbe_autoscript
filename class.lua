@@ -300,9 +300,11 @@ function move(pattern)
         end
         directions = invDirs
     end
+    touchDown(DTABLE[5])
     for i, v in ipairs(directions) do
-        click(DTABLE[v])
+        touchMove(DTABLE[v])
     end
+    touchUp(DTABLE[5])
 end
 
 -- ========== Dialogs ================
@@ -396,7 +398,7 @@ elseif FUNC == 3 then
 		if LastBattle:check() > 120 then
 		    -- Notify user should move to next area, and reset timer for next 120s
         	vibrate(2)
-	LastBattle:set()
+            LastBattle:set()
         	timeout = timeout + 1
         	print(timeout)
         	if timeout >= TIMEOUT_LIMIT then
@@ -404,6 +406,7 @@ elseif FUNC == 3 then
         	end
 		end
 		move(MOVE_PATTERN)
+		
 		FINISH = false
 	until FINISH
 	vibrate(2)

@@ -5,7 +5,7 @@ Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析�
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
 Settings:set("MinSimilarity", 0.85)
 
-setDragDropTiming(400, 800)			--downMs: 開始移動前壓不住不動幾毫秒	upMs: 最後放開前停住幾毫秒
+setDragDropTiming(200, 200)			--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
 setDragDropStepCount(3)				--stepCount: 從啟始點到目的地分幾步移動完
 setDragDropStepInterval(100)	--intervalMs: 每次移動間停留幾毫秒
 
@@ -129,6 +129,27 @@ end
     end
 --]]
 
+
+DXN = 380 -- X NAGTIVE
+DXC = 800 -- X CENTER
+DXP = 1210 -- X POSITIVE
+
+DYN = 770 -- Y NAGATIVE
+DYC = 1170 -- Y CENTER
+DYP = 1570 -- Y POSITIVE
+
+DTABLE = {}
+DTABLE[4] = Location(DXN, DYC)
+DTABLE[7] = Location(DXN, DYP)
+DTABLE[8] = Location(DXC, DYP)
+DTABLE[9] = Location(DXP, DYP)
+DTABLE[6] = Location(DXP, DYC)
+DTABLE[3] = Location(DXP, DYN)
+DTABLE[2] = Location(DXC, DYN)
+DTABLE[1] = Location(DXN, DYN)
+
+DTABLE[5] = Location(DXC, DYC)
+
 function move(pattern)
     math.randomseed(os.time())
     if pattern == 6 then
@@ -136,38 +157,18 @@ function move(pattern)
     end
     inverse = math.random(0,1)
 
-    DXN = 380 -- X NAGTIVE
-    DXC = 800 -- X CENTER
-    DXP = 1210 -- X POSITIVE
-
-    DYN = 770 -- Y NAGATIVE
-    DYC = 1170 -- Y CENTER
-    DYP = 1570 -- Y POSITIVE
-    
-    DTABLE = {}
-    DTABLE[4] = Location(DXN, DYC)
-    DTABLE[7] = Location(DXN, DYP)
-    DTABLE[8] = Location(DXC, DYP)
-    DTABLE[9] = Location(DXP, DYP)
-    DTABLE[6] = Location(DXP, DYC)
-    DTABLE[3] = Location(DXP, DYN)
-    DTABLE[2] = Location(DXC, DYN)
-    DTABLE[1] = Location(DXN, DYN)
-
-    DTABLE[5] = Location(DXC, DYC)
-    
     directions = {}
     dirsCount = 0
     if pattern == 1 then -- \
-        directions = {4, 4, 7, 8, 9, 6, 3, 2, 1, 4}
+        directions = {7, 7, 7, 3, 7, 7, 3, 7, 7, 7}
     elseif pattern == 2 then -- |
-        directions = {8, 8, 8, 6, 4, 2, 8, 8, 4, 6}
+        directions = {8, 8, 8, 2, 8, 8, 2, 8, 8, 8}
     elseif pattern == 3 then -- /
-        directions = {4, 4, 1, 2, 3, 6, 9, 8, 7, 4}
+        directions = {9, 9, 9, 1, 9, 9, 1, 9, 9, 9}
     elseif pattern == 4 then -- -
-        directions = {4, 4, 4, 8, 2, 8, 2, 8, 4, 4}
+        directions = {4, 6, 4, 6, 4, 6, 4, 6, 4, 6}
     elseif pattern == 5 then -- O
-        directions = {4, 7, 8, 9, 6, 3, 2, 1, 6, 4}
+        directions = {4, 7, 8, 9, 6, 3, 2, 1, 4, 6}
     end
     
     if inverse == 1 then
@@ -177,8 +178,9 @@ function move(pattern)
         end
         directions = invDirs
     end
+    
     for i, v in ipairs(directions) do
-        click(DTABLE[v])
+        touchMove(DTABLE[v], 1)
     end
 end
 
@@ -233,11 +235,12 @@ elseif FUNC == 2 then
         FINISH = REPEAT_COUNT == 0
     until FINISH
     scriptExit("Repeat finish")
-elseif FUNC == 3 then
 
+elseif FUNC == 3 then
     dialogInit()
         MOVE_PATTERN = 1
         TIMEOUT_LIMIT = 5
+        addTextView("請設定為滑動移動而不是螢幕搖桿")newRow()
         addTextView("第一場戰鬥請記得手動按Auto")newRow()
         addTextView("每隔120秒無戰鬥會振動, 每振動")addEditNumber("TIMEOUT_LIMIT", 5)
         addTextView("次會中止script")newRow()
@@ -257,9 +260,14 @@ elseif FUNC == 3 then
 	setScanInterval(1)
 	timeout = 0
 	battleCount = 0
+	isTouchDown = false
 	repeat
 		if (BattleIndicator:exists("Battle.png")) then
 			toast("In Battle")
+			if isTouchDown then
+                touchUp(DTABLE[5], 0.2)
+                isTouchDown = false
+            end
 			repeat
 				if (not BattleIndicator:exists("Battle.png")) then
     				ResultIndicator:existsClick("BattleFinishResult.png")
@@ -275,11 +283,15 @@ elseif FUNC == 3 then
         	vibrate(2)
 			LastBattle:set()
         	timeout = timeout + 1
-        	print(timeout)
+        	print("Timeout"..timeout)
         	if timeout >= TIMEOUT_LIMIT then
         	    break
         	end
 		end
+        if not isTouchDown then
+            touchDown(DTABLE[5], 0.2)
+            isTouchDown = true
+        end
 		move(MOVE_PATTERN)
 		FINISH = false
 	until FINISH
@@ -386,10 +398,10 @@ switch = {
 
 TIMER:set()
 repeat
+    switch[STEP]()
     if DEBUG then
         toast("step"..STEP)
     end
-    switch[STEP]()
     if (R13_0111:exists("Communication_Error.png")) then
         R13_0111:existsClick("OK.png")
     end
