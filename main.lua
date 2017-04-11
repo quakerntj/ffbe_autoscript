@@ -7,8 +7,8 @@ Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析�
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
 Settings:set("MinSimilarity", 0.85)
 
-setDragDropTiming(200, 200)			--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
-setDragDropStepCount(3)				--stepCount: 從啟始點到目的地分幾步移動完
+setDragDropTiming(400, 100)			--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
+setDragDropStepCount(4)				--stepCount: 從啟始點到目的地分幾步移動完
 setDragDropStepInterval(100)	--intervalMs: 每次移動間停留幾毫秒
 
 screen = getAppUsableScreenSize()
@@ -17,6 +17,7 @@ Y = 2560 --screen:getY() will not get right full screen size.
 DEBUG = true
 
 require("screen_config")
+require("battle_scene")
 require("trust")
 
 function move(pattern)
@@ -61,6 +62,9 @@ addRadioGroup("FUNC", 1)
     addRadioButton("刷土廟", 1)
     addRadioButton("自動點擊REPEAT", 2)
     addRadioButton("自動移動", 3)
+    if DEBUG then
+        addRadioButton("測試", 4)
+    end
     newRow()
 BRIGHTNESS = false IMMERSIVE = true
 addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
@@ -182,5 +186,10 @@ elseif FUNC == 3 then
 	vibrate(2)
 	
 	scriptExit("Auto move finish")
+elseif FUNC == 4 then
+    scene = BattleScene()
+    scene.units[3]:abilityPage()
+    scene:chooseItemByIndex(3, 13)
+    scene.units[3]:submit()
 end
 

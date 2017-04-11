@@ -1,16 +1,5 @@
 -- Edit by Quaker NTj
 
-ScrollRegion = Region(1410, 1592, 20, 704)
-
-BIL = {  -- Battle item location
-    Location(360, 1700),  -- Item 1
-    Location(360, 1960),  -- Item 2
-    Location(360, 2200),  -- Item 3
-    Location(1080, 1700), -- Item 4
-    Location(1080, 1960), -- Item 5
-    Location(1080, 2200), -- Item 6
-}
-
 BattleLocationInit = false
 BattleLocationItems = {}
 
@@ -33,12 +22,16 @@ setmetatable(BattleUnit, {
 function BattleUnit.new(region)
 	local self = setmetatable({}, BattleUnit)
 	self.region = region
-	local location = region.center
-	local swipeStep = 250
-	self.swipeRight = Location(location.getX() + swipeStep, location.getY())
-	self.swipeUp = Location(location.getX(), location.getY() - swipeStep)
-	self.swipeDown = Location(location.getX(), location.getY() + swipeStep)
-	self.swipeLeft = Location(location.getX() - swipeStep, location.getY())
+region:highlight(0.4)
+	local center = region:getCenter()
+	print(center:getX().." "..center:getY())
+	self.location = Location(center:getX(), center:getY() - 127) -- TODO Bug, center getY didn't divde to 2
+	
+	local swipeStep = 400
+	self.swipeRight = Location(center:getX() + swipeStep, center:getY() - 127)
+	self.swipeUp = Location(center:getX(), center:getY() - swipeStep - 127)
+	self.swipeDown = Location(center:getX(), center:getY() + swipeStep - 127)
+	self.swipeLeft = Location(center:getX() - swipeStep, center:getY() - 127)
 	self.PageStatus = {
 		UnitPage = 0,
 		AbilityPage = 1,
@@ -50,49 +43,50 @@ function BattleUnit.new(region)
 		UseIteam = 2,
 		Defence = 3
 	}
-	return self;
-}
+	return self
+end
 
-function BattleUnit:reset() {
+function BattleUnit:reset()
 	self.pageStatus = 0
 	self.actionStatus = 0
-}
+end
 
-function BattleUnit:checkExists() {
+function BattleUnit:checkExists()
     return not ((self.region:exists("Limit.png")) == nil)
-}
+end
 
-function BattleUnit:submit() {
+function BattleUnit:submit()
 	-- Check pageStatus is in unit page
 --	if not self.pageStatus == 0 then
 --		self.scene:return()
 --	end
 	click(self.location)
-}
+end
 
-function BattleUnit:abilityPage() {
+function BattleUnit:abilityPage()
 	dragDrop(self.location, self.swipeRight)
 --	self.pageStatus = 1
 --	self.actionStatus = 1
-}
+end
 
-function BattleUnit:attact() {
+function BattleUnit:attack()
 	dragDrop(self.location, self.swipeUp)
 --	self.pageStatus = 1
 --	self.actionStatus = 0
-}
+end
 
-function BattleUnit:item() {
+function BattleUnit:item()
 	dragDrop(self.location, self.swipeLeft)
+	print(self.location:getX().." "..self.location:getY() .. "--" .. self.swipeLeft:getX().." "..self.swipeLeft:getY())
 --	self.pageStatus = 1
 --	self.actionStatus = 1
-}
+end
 
-function BattleUnit:defence() {
+function BattleUnit:defence()
 	dragDrop(self.location, self.swipeDown)
 --	self.pageStatus = 1
 --	self.actionStatus = 1
-}
+end
 
 BattlePage = {}
 BattlePage.__index = BattlePage
@@ -107,21 +101,31 @@ function BattlePage.new(region, locations)
 	local self = setmetatable({}, BattlePage)
 	self.region = region
 	self.locations = locations
-	self.lineHeight = locations[3].getY() - locations[1].getY()
-	self.centerX = region.getX() + region.getW() / 2
-	self.centerY = region.getY() + region.getH() / 2
+	self.lineHeight = locations[3]:getY() - locations[1]:getY()
+	self.centerX = region:getCenter():getX()
+	self.centerY = region:getCenter():getY()
 	self.center = Location(self.centerX, self.centerY)
 	self.pageUpStep = Location(self.centerX, self.centerY - self.lineHeight * 3)
+    self.ScrollRegion = Region(1410, 1592, 20, 704)
 	return self
 end
 
 function BattlePage:nextPage()
-	if ScrollRegion:exists("Battle_Page_Scroll_End.png") then
+	if self.ScrollRegion:exists("Battle_Page_Scroll_End.png") then
 		return false
 	end
 	
 	DragDrop(self.center, self.pageUpStep);
-end	
+	return true
+end
+
+function BattlePage:choose(idx)
+    click(self.locations[idx])
+end
+
+function BattlePage:existsChoose(pattern)
+    self.region:existsClick(pattern)
+end
 
 BattleScene = {}
 BattleScene.__index = BattleScene
@@ -136,32 +140,63 @@ function BattleScene.new()
 	local self = setmetatable({}, BattleScene)
 	local BattleUnitRegions = {
         -- 715x256
-        Region(2, 1586, 717, 1843) -- Unit 1
-        Region(2, 1844, 717, 2102) -- Unit 2
-        Region(2, 2103, 717, 2360) -- Unit 3
-        Region(719, 1846, 1434, 1843) -- Unit 4
-        Region(719, 1846, 1434, 2102) -- Unit 5
-        Region(719, 1846, 1434, 2360) -- Unit 6  Friend
+        Region(2, 1586, 715, 256), -- Unit 1
+        Region(2, 1844, 715, 256), -- Unit 2
+        Region(2, 2103, 715, 256), -- Unit 3
+        Region(719, 1586, 715, 256), -- Unit 4
+        Region(719, 1844, 715, 256), -- Unit 5
+        Region(719, 2103, 715, 256) -- Unit 6  Friend
     }
     
     self.units = {
-        BattleUnit(self, BattleUnitRegions[1]),
-        BattleUnit(self, BattleUnitRegions[2]),
-        BattleUnit(self, BattleUnitRegions[3]),
-        BattleUnit(self, BattleUnitRegions[4]),
-        BattleUnit(self, BattleUnitRegions[5]),
-        BattleUnit(self, BattleUnitRegions[6])
+        BattleUnit(BattleUnitRegions[1]),
+        BattleUnit(BattleUnitRegions[2]),
+        BattleUnit(BattleUnitRegions[3]),
+        BattleUnit(BattleUnitRegions[4]),
+        BattleUnit(BattleUnitRegions[5]),
+        BattleUnit(BattleUnitRegions[6])
     }
+ 
+    BattleItemRegion = Region(18, 1585, 1393, 2302)
+    BattleItemLocations = {  -- Battle item location
+        Location(360, 1700),  -- Item 1
+        Location(360, 1960),  -- Item 3  -- Region(718, 1584, 1391-718, 1812-1584) Y gap 243
+        Location(360, 2200),  -- Item 5
+        Location(1080, 1700), -- Item 2
+        Location(1080, 1960), -- Item 4
+        Location(1080, 2200), -- Item 6
+    }
+   
+    self.page = BattlePage(BattleItemRegion, BattleItemLocations)
+    
+    return self
 end
 
 -- Item index is in left-right-nextline order
-function BattleScene:chooseItemByIndex(idx) {
---	page = idx / 9
---	result self.page:gotoPage(page)
---	result = self.page.click(idx)
-}
+function BattleScene:chooseItemByIndex(unit, idx)
+    --self.units[unit]:item()
+    itemIdx = idx;
+    pageIdx = math.floor(idx / 9)
+    local i = 0
+    local res = false
+    while i < pageIdx do
+        i = i + 1
+        if not self.page:nextPage() then
+            return false
+        end
+        itemIdx = itemIdx - 9
+    end
+    i = nil
+    self.page:choose(itemIdx)
+    return true
+end
 
-function BattleScene:chooseItemByImage(pattern) {
---	repeat existsClick(self.page:region, pattern) then
---		self.page:nextPage()
-}
+function BattleScene:chooseItemByImage(pattern)
+    self.units[unit]:item()
+    while not self.page.exitsChoose(pattern) do
+        if not self.page:nextPage() then
+            return false
+        end
+    end
+    return true
+end

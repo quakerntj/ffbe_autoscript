@@ -33,7 +33,9 @@ function trust()
             if (existsClick(QUEST_NAME)) then
                 TIMER2:set()
                 if (R34_1311:existsClick("06_Next.png")) then
-                    if (R14_0111:existsClick(FRIEND_NAME)) then
+                    wait(0.8)
+                    R34_1111:highlight(0.4)
+                    if (R34_1111:existsClick(FRIEND_NAME)) then
                         STEP = 2
                     end
                 else
@@ -56,9 +58,12 @@ function trust()
                 end
             else
                 toast('找不到關卡')
-                existsClick("06_Next.png")
-                existsClick("09_Return.png")
+                if existsClick("06_Next.png") then
+    R14_0111:existsClick(FRIEND_NAME)
+    STEP=2
+elseif               existsClick("LeftTop_Return.png") then
                 STEP = 1
+end
             end
         end,
         [ 2 ] = function()
