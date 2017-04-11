@@ -41,6 +41,14 @@ setmetatable(TrustManager, {
 
 function TrustManager.new()
 	local z = setmetatable({}, TrustManager)
+	z.States = {
+		"ChooseLevel",
+		"Go",
+		"Battle",
+		"ResultsExp",
+		"ResultsItem",
+		"Clear"
+	}
 	return z
 end
 
@@ -48,12 +56,8 @@ function TrustManager:Looper()
     if not DEBUG then
         STEP = 1
     end
-    CLEAR = 0                -- Stage clear times
     ON_AUTO = false
-    ERROR_COUNT = 0
-    TIMER = Timer()			-- Timer of loop
-    TIMER2 = Timer()		-- Timer of step
-    watchDog = WatchDog(3, z:dogBarking)
+    watchDog = WatchDog(30, z:dogBarking)
 
     local ResultExp = Region(560, 1000, 590, 400)
     --local ResultNext = Region(600, 2200, 240, 100)
@@ -74,15 +78,14 @@ function TrustManager:Looper()
     end
 
     switch = {
-        [  1 ] = function()
+        ["ChooseLevel"] = function()
             if (existsClick(QUEST_NAME)) then
-                TIMER2:set()
                 R34_1311:highlight(0.1)
                 if (R34_1311:existsClick("06_Next.png")) then
                     wait(0.8)
                     R34_1111:highlight(0.1)
                     if (R34_1111:existsClick(FRIEND_NAME)) then
-                        STEP = 2
+                        return "Go"
                     else
                     	-- Run out of friend
                     	R34_1111:existsClick("02_No_friend.png")
@@ -98,10 +101,10 @@ function TrustManager:Looper()
                         wait(3)
                         R14_0111:highlight(0.1)
                         R14_0111:existsClick(FRIEND_NAME)
-                        STEP = 2
 
                         print("使用寶石回復體力")
                         BUY_LOOP = BUY_LOOP - 1
+                        return "Go"
                     else
                     	R34_1211:highlight(0.1)
 						if (R34_1211:existsClick("Stamina_Back.png")) then
@@ -117,81 +120,87 @@ function TrustManager:Looper()
                 if existsClick("06_Next.png") then
                     wait(0.8)
         	    	R34_1111:existsClick(FRIEND_NAME)
-				    STEP = 2
+				    return "Go"
 				elseif
 	                existsClick("LeftTop_Return.png") then
-                	STEP = 1
 				end
             end
+            return "ChooseLevel"
         end,
-        [ 2 ] = function()
-            R34_1311:highlight(0.1)
+        ["Go"] = function()
             if (R34_1311:existsClick("03_Go.png")) then
-                STEP = 3
+                return "Battle"
             end
+            return "Go"
         end,
-        [ 3 ] = function()
-            R34_1311:highlight(0.1)
-            R28_0711:highlight(0.1)
-            if (ON_AUTO) then
-                if (R34_1311:existsClick("06_Next1.png")) then
-                    ON_AUTO = false
-                    STEP = 4
-                    setScanInterval(SCAN_INTERVAL)
-                end
+        ["Battle"] = function()
+            if (ON_AUTO and R34_1311:existsClick("06_Next1.png")) then
+                ON_AUTO = false
+                setScanInterval(SCAN_INTERVAL)
+                return "ResultExp"
             elseif (R28_0711:existsClick("04_Auto.png")) then
                 ON_AUTO = true
                 setScanInterval(10)
             end
+            return "Battle"
         end,
-        [ 4 ] = function()
+        ["ResultExp"] = function()
             ResultExp:highlight(0.1)
             if (ResultExp:existsClick("07_Next_2.png")) then
                 wait(0.5)
                 click(getLastMatch())
-                STEP = 5
+                return "ResultItem"
             end
+            return "ResultExp"
         end,
-        [ 5 ] = function()
+        ["ResultItem"] = function()
             -- Result Next is bigger than other next...
             wait(1)
             if (click(ResultItemNextLocation)) then
                 if (FRIEND) then
+                    -- Not to add new friend
                     existsClick("08_No_Friend1.png", 5)
                 end
-                STEP = 1
-                CLEAR = CLEAR + 1
+                return "Clear"
             end
+            return "ResultItem"
         end
     }
 
-    TIMER:set()
-    repeat
-        switch[STEP]()
-        watchDog:awake()
+    z.totalTimer = Timer()
+    local questTimer = Timer()
+    totalTimer:set()
+    questTimer:set()
+    
+    z.loopCount = 0
+    z.state = z.States[STEP]
+    while loopCount >= CLEAR_LIMIT do
         if DEBUG then
-            toast("step"..STEP)
+            toast(z.state)
         end
-        if (R13_0111:exists("Communication_Error.png")) then
-            R13_0111:existsClick("OK.png")
+        -- run state machine
+        z.state = switch[z.state]()
+        
+        watchDog:awake()
+        if (z.state == "Clear") then
+        	questTimer:set()
+            z.state = "ChooseLevel"
+            z.loopCount = z.loopCount + 1
+            toast("Quest clear:"..z.loopCount.."/"..CLEAR_LIMIT.."("..questTimer:check().."s)")
         end
-        FINISH = false
-        if (CLEAR == CLEAR_LIMIT) then    -- Step repeat check
-            FINISH = true
-            print("Quest clear:"..CLEAR.."/"..CLEAR_LIMIT.."("..TIMER:check()..")")
-        elseif (ERROR_COUNT == 5) then
-            FINISH = true
-            print("程式錯誤，腳本跳出")
-            toast("程式錯誤，腳本跳出")
-        else
-            FINISH = false
-            if (STEP == 1) then
-                toast("Quest clear:"..CLEAR.."/"..CLEAR_LIMIT.."("..TIMER2:check()..")")
-            end
-        end
-    until FINISH
+    end
+    print("Quest clear:"..z.loopCount.."/"..CLEAR_LIMIT.."("..z.totalTimer:check().."s)")
 end
 
 function TrustManager:dogBarking(watchdog)
+    if (R13_0111:exists("Communication_Error.png")) then
+        R13_0111:existsClick("OK.png")
+    else
+    	print("Error can't be handled. Stop Script.")
+	    print("Quest clear:"..z.loopCount.."/"..CLEAR_LIMIT.."("..z.totalTimer:check().."s)")
+    	scriptExit("Trust Manger finished")
+    end
+
+	toast("Watchdog barking")
 	self.watchdog.touch()
 end
