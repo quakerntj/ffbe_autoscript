@@ -189,7 +189,7 @@ elseif FUNC == 3 then
 elseif FUNC == 4 then
     scene = BattleScene()
     scene.units[3]:abilityPage()
-    scene:chooseItemByIndex(3, 13)
+    scene:chooseByIndex(13)
     scene.units[3]:submit()
 end
 

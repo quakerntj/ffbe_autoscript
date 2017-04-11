@@ -22,7 +22,7 @@ setmetatable(BattleUnit, {
 function BattleUnit.new(region)
 	local self = setmetatable({}, BattleUnit)
 	self.region = region
-region:highlight(0.4)
+	region:highlight(0.1)
 	local center = region:getCenter()
 	print(center:getX().." "..center:getY())
 	self.location = Location(center:getX(), center:getY() - 127) -- TODO Bug, center getY didn't divde to 2
@@ -173,8 +173,7 @@ function BattleScene.new()
 end
 
 -- Item index is in left-right-nextline order
-function BattleScene:chooseItemByIndex(unit, idx)
-    --self.units[unit]:item()
+function BattleScene:chooseByIndex(idx)
     itemIdx = idx;
     pageIdx = math.floor(idx / 9)
     local i = 0
@@ -191,8 +190,7 @@ function BattleScene:chooseItemByIndex(unit, idx)
     return true
 end
 
-function BattleScene:chooseItemByImage(pattern)
-    self.units[unit]:item()
+function BattleScene:chooseByImage(pattern)
     while not self.page.exitsChoose(pattern) do
         if not self.page:nextPage() then
             return false
