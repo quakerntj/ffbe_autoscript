@@ -97,7 +97,8 @@ if FUNC == 1 then
     if BRIGHTNESS then
         setBrightness(0)
     end
-    trust()
+    trust = TrustManager()
+    trust:Looper()
     scriptExit("Trust finish")
 elseif FUNC == 2 then
     REPEAT_COUNT = 4

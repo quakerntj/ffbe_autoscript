@@ -9,24 +9,24 @@ setmetatable(WatchDog, {
   end,
 })
 
-function WatchDog.new(timeout, bark)
+function WatchDog.new(timeout, obj, bark)
 	local self = setmetatable({}, WatchDog)
 	self.timeout = timeout
 	self.timer = Timer()
 	self.timer:set()
+	self.obj = obj
 	self.bark = bark -- callback function
 	return self
 end
 
 function WatchDog:touch()
 	self.timer:set()
+	self.lastTouch = self.timer:check()
 end
 
 function WatchDog:awake()
-	if (self.timer:check() > self.timeout)
-		bark(self)  -- User should touch the dog themself.
-	else
-		self:touch()
+	if (self.timer:check() > self.timeout) then
+		self.bark(self.obj, self)  -- User should touch the dog themself.
 	end
 end
 
@@ -40,8 +40,8 @@ setmetatable(TrustManager, {
 })
 
 function TrustManager.new()
-	local z = setmetatable({}, TrustManager)
-	z.States = {
+	local self = setmetatable({}, TrustManager)
+	self.States = {
 		"ChooseLevel",
 		"Challenge",
 		"ChooseFriend",
@@ -51,7 +51,7 @@ function TrustManager.new()
 		"ResultsItem",
 		"Clear"
 	}
-	return z
+	return self
 end
 
 function TrustManager:Looper()
@@ -59,7 +59,7 @@ function TrustManager:Looper()
         STEP = 1
     end
     ON_AUTO = false
-    watchDog = WatchDog(30, z:dogBarking)
+    watchDog = WatchDog(10, self, self['dogBarking'])
 
     local ResultExp = Region(560, 1000, 590, 400)
     --local ResultNext = Region(600, 2200, 240, 100)
@@ -85,7 +85,7 @@ function TrustManager:Looper()
 
     switch = {
     	["ChooseStage"] = function()
-    		if (existClick("TheTempleofEarthMapIcon.png") then
+    		if existsClick("TheTempleofEarthMapIcon.png") then
     			return "ChooseLevel"
     		end
     		return "ChooseStage"
@@ -146,14 +146,15 @@ function TrustManager:Looper()
             if (ResultExp:existsClick("07_Next_2.png")) then
                 wait(0.5)
                 click(getLastMatch())
-                return "ResultItem"s
+                return "ResultItem"
             end
             return "ResultExp"
         end,
         ["ResultItem"] = function()
             -- Result Next is bigger than other next...
             wait(1)
-            click(Location(X12, Y12) -- speed up showing items
+            local l = Location(X12, Y12)
+            click(l) -- speed up showing items
             wait(0.5)
             if (click(ResultItemNextLocation)) then
                 if (FRIEND) then
@@ -166,43 +167,48 @@ function TrustManager:Looper()
         end
     }
 
-    z.totalTimer = Timer()
+    self.totalTimer = Timer()
     local questTimer = Timer()
-    totalTimer:set()
+    self.totalTimer:set()
     questTimer:set()
     
-    z.loopCount = 0
-    z.state = z.States[STEP]
-    while loopCount >= CLEAR_LIMIT do
+    self.loopCount = 0
+    self.state = self.States[STEP]
+    while self.loopCount < CLEAR_LIMIT do
         if DEBUG then
-            toast(z.state)
+            toast(self.state)
         end
         -- run state machine
-        z.state = switch[z.state]()
-        
+        newState = switch[self.state]()
+        if not (newState == self.state) then
+        	self.state = newState
+        	watchDog:touch()
+        end
         watchDog:awake()
-        if (z.state == "Clear") then
+        
+        if (self.state == "Clear") then
         	questTimer:set()
-            z.state = "ChooseLevel"
-            z.loopCount = z.loopCount + 1
-            toast("Quest clear:"..z.loopCount.."/"..CLEAR_LIMIT.."("..questTimer:check().."s)")
+            self.state = "ChooseLevel"
+            self.loopCount = self.loopCount + 1
+            toast("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..questTimer:check().."s)")
         end
     end
-    print("Quest clear:"..z.loopCount.."/"..CLEAR_LIMIT.."("..z.totalTimer:check().."s)")
+    print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
 end
 
-function TrustManager:dogBarking(watchdog)
+function TrustManager.dogBarking(self, watchdog)
 	toast("Watchdog barking")
-    if (R13_0111:exists("Communication_Error.png")) then
+	if self.state == "Battle" then
+    elseif (R13_0111:exists("Communication_Error.png")) then
         R13_0111:existsClick("OK.png")
     elseif R34_0011:existsClick("LeftTop_Return.png") then
         -- keep return until ChooseStage
-		z.state = "ChooseStage"
+		self.state = "ChooseStage"
     else
     	print("Error can't be handled. Stop Script.")
-	    print("Quest clear:"..z.loopCount.."/"..CLEAR_LIMIT.."("..z.totalTimer:check().."s)")
+	    print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
     	scriptExit("Trust Manger finished")
     end
 
-	self.watchdog.touch()
+	watchdog:touch()
 end
