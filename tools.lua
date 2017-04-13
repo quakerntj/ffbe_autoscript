@@ -16,34 +16,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
-WatchDog = {}
-WatchDog.__index = WatchDog
-
-setmetatable(WatchDog, {
-	__call = function (cls, ...)
-		return cls.new(...)
-	end,
-})
-
-function WatchDog.new(timeout, obj, bark)
-	local self = setmetatable({}, WatchDog)
-	self.timeout = timeout
-	self.timer = Timer()
-	self.timer:set()
-	self.obj = obj
-	self.bark = bark -- callback function
-	return self
+function hasValue(table, value)
+    local keys = {}
+    local z = 1
+    for k,v in ipairs(table) do
+        if v == value then
+            keys[z] = k
+            z = z + 1
+        end
+    end
+    return keys
 end
-
-function WatchDog:touch()
-	self.timer:set()
-	self.lastTouch = self.timer:check()
-end
-
-function WatchDog:awake()
-	if (self.timer:check() > self.timeout) then
-		self.bark(self.obj, self)  -- User should touch the dog themself.
-	end
-end
-
-

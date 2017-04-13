@@ -1,4 +1,5 @@
 -- Copyright © 2017 Quaker NTj <quakerntj@hotmail.com>
+-- <https://github.com/quakerntj/ffbe_autoscript>
 
 --[[
     This script is free software: you can redistribute it and/or modify

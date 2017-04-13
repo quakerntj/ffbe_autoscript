@@ -1,4 +1,5 @@
 -- Copyright © 2017 Quaker NTj <quakerntj@hotmail.com>
+-- <https://github.com/quakerntj/ffbe_autoscript>
 
 --[[
     This script is free software: you can redistribute it and/or modify
@@ -33,7 +34,10 @@ Y = 2560 --screen:getY() will not get right full screen size.
 DEBUG = true
 
 require("screen_config")
+require("tools")
 require("battle_scene")
+require("designed_battle")
+require("watchdog")
 require("trust")
 
 function move(pattern)
@@ -68,62 +72,6 @@ function move(pattern)
     for i, v in ipairs(directions) do
         touchMove(DTABLE[v], 1)
     end
-end
-
-function chooseOrders()
-    local UnitOrders = { "1", "2", "3", "4", "5", "6" }
-    local UnitTargets = { "1", "2", "3", "4", "5", "6", "All" }
-
-    dialogInit()
-        addTextView("順序小的先發動, 相同的就按兵員順序")newRow()
-        addTextView("選擇是否為敵方, 若是己方則選擇治療目標")newRow()
-        addTextView("敵方不支援指定目標, 選什麼都無效")newRow()
-        addTextView("沒有打勾的兵員最後會被Auto觸發")newRow()
-        -- addSpinnerIndex and addSpinner accept only global variable
-        for i = 1, 6 do
-            addTextView("兵員"..i.." 順序")addSpinnerIndex("unitOrder"..i, UnitOrders, UnitOrders[3])
-            addCheckBox("unitIsEnemy"..i, "敵方?", true)addTextView("目標")
-            addSpinnerIndex("unitTarget"..i, UnitTargets, 7)newRow()
-        end
-    dialogShow("Setting Actions 2")
-
-    local orders = { unitOrder1, unitOrder2, unitOrder3, unitOrder4, unitOrder5, unitOrder6 }
-    local isEnemys = { unitIsEnemy1, unitIsEnemy2, unitIsEnemy3, unitIsEnemy4, unitIsEnemy5, unitIsEnemy6 }
-    local targets = { unitTarget1, unitTarget2, unitTarget3, unitTarget4, unitTarget5, unitTarget6 }
-
-    -- clean used global variable
-    for i = 1, 6 do
-        _G["unitOrder"..i] = nil
-        _G["unitIsEnemy"..i] = nil
-        _G["unitTarget"..i] = nil
-    end
-
-    return orders, isEnemys, targets
-end
-
-function chooseActions()
-    local UnitActions = { "攻擊", "能力", "道具", "防禦" }
-    dialogInit()
-        addTextView("輸入技能與道具的'欄位'自左向右, 然後換行, 由1開始, 1是極限技")newRow()
-        addTextView("目前道具只能用在自己身上")newRow()
-        for i = 1, 6 do
-            addCheckBox("unitEnable"..i, "兵員"..i, true)
-            addTextView("行動")addSpinnerIndex("unitAction"..i, UnitActions, 1)
-            addTextView("欄位")addEditNumber("unitIndex"..i, 1)newRow()
-        end
-    dialogShow("Setting Actions 1")
-
-    -- fill tables.
-    local enables = { unitEnable1, unitEnable2, unitEnable3, unitEnable4, unitEnable5, unitEnable6 }
-    local actions = { unitAction1, unitAction2, unitAction3, unitAction4, unitAction5, unitAction6 }
-    local indices = { unitIndex1, unitIndex2, unitIndex3, unitIndex4, unitIndex5, unitIndex6 }
-
-    for i = 1, 6 do
-        _G["unitEnable"..i] = nil
-        _G["unitAction"..i] = nil
-        _G["unitIndex"..i] = nil
-    end
-    return enables, actions, indices
 end
 
 -- ========== Dialogs ================
@@ -261,98 +209,7 @@ elseif FUNC == 3 then
 --    scene = BattleScene()
 --    scene.page:pageUp(1)
 elseif FUNC == 4 then
-    function hasValue(table, value)
-        local keys = {}
-        local z = 1
-        for k,v in ipairs(table) do
-            if v == value then
-                keys[z] = k
-                z = z + 1
-            end
-        end
-        return keys
-    end
-    
-    BTL_INTERACTION = true
-    local enables, actions, indices = chooseActions()
-    local orders, isEnemys, targets = chooseOrders()
-    scene = BattleScene()
-
-while true do
-    for unit = 1, 6 do
-        if enables[unit] then
-            local action = actions[unit]
-            -- ignore action == 1
-            if action == 2 then
-                scene.units[unit]:abilityPage()
-                wait(0.5)
-                if scene.page:choose(indices[unit]) then
-                    wait(1)
-                    if (isEnemys[unit] and (targets[unit] == 7)) then
-                        -- Do nothing
-                    elseif (isEnemys[unit] and (not (targets[unit] == 7))) then
-                        -- TODO Not support attack specified target now...
-                    elseif ((not isEnemys[unit]) and (targets[unit] == 7)) then
-                        scene.units[1]:submit()
-                        wait(0.5)
-                    elseif (not isEnemys[unit]) then
-                        scene.units[targets[unit]]:submit()
-                        wait(0.5)
-                    end
-                else
-                    -- click right-bottom return
-                end
-            elseif action == 3 then
-                scene.units[unit]:itemPage()
-                wait(0.5)
-                if scene.page:choose(indices[unit]) then
-                    wait(1)
-                    if (isEnemys[unit] and (targets[unit] == 7)) then
-                        -- Do nothing
-                    elseif (isEnemys[unit] and (not (targets[unit] == 7))) then
-                        -- TODO Not support attack specified target now...
-                    elseif ((not isEnemys[unit]) and (targets[unit] == 7)) then
-                        scene.units[1]:submit()
-                        wait(0.5)
-                    elseif (not isEnemys[unit]) then
-                        scene.units[targets[unit]]:submit()
-                        wait(0.5)
-                    end
-                else
-                    -- click right-bottom return
-                end
-            elseif action == 4 then
-                scene.units[unit]:defence()
-                wait(0.5)
-            end
-            wait(0.1)
-        end
-    end
-    
-    -- sort unit by orders, and submit
-    for i = 1, 6 do
-        local keys = {}
-        keys = hasValue(orders, i)
-        for j,unit in ipairs(keys) do
-            if enables[unit] then
-                scene.units[unit]:submit()
-            end
-        end
-    end
-    
-    if (R28_0711:existsClick("04_Auto.png")) then
-        wait(2)
-        click(getLastMatch())  -- cancel auto
-    end
-    
-    if BTL_INTERACTION then
-        dialogInit()
-            addTextView("行動, 請等到有行動力之後再按確認")newRow()
-            addRadioGroup("NEXT_ACTION", 1)
-                addRadioButton("Repeat", 1)
-                addRadioButton("Auto", 2)
-        dialogShow("Auto move pattern")
-    end
-end
+    db = DesignedBattle(2)
+    db:loop()
 end
 

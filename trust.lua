@@ -1,4 +1,5 @@
 -- Copyright © 2017 Quaker NTj <quakerntj@hotmail.com>
+-- <https://github.com/quakerntj/ffbe_autoscript>
 
 --[[
     This script is free software: you can redistribute it and/or modify
@@ -26,6 +27,7 @@ setmetatable(TrustManager, {
 
 function TrustManager.new()
 	local self = setmetatable({}, TrustManager)
+    self.errorCount = 0
 	self.States = {
 		"ChooseStage",
 		"ChooseLevel",
@@ -199,13 +201,17 @@ function TrustManager:Looper()
 			self.loopCount = self.loopCount + 1
 			toast("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..questTimer:check().."s)")
 			questTimer:set()
+			self.errorCount = 0
 		end
 	end
 	print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
 end
 
 function TrustManager.dogBarking(self, watchdog)
-	if DEBUG then toast("Watchdog barking") end
+	friendChoice1 = "02_Pick_up_friend.png"
+	friendChoice2 = "02_No_friend.png"
+
+    if DEBUG then toast("Watchdog barking") end
 	if (R13_0111:exists("Communication_Error.png")) then
 		R13_0111:existsClick("OK.png")
 	elseif BattleIndicator:exists("Battle.png") then
@@ -216,17 +222,26 @@ function TrustManager.dogBarking(self, watchdog)
 		self.state = "ResultExp"
 	elseif exists(QUEST_NAME) then
 		self.state = "ChooseLevel"
-	elseif R34_0011:exists("LeftTop_Return.png") then
-		-- keep return until ChooseStage
-		self.state = "ChooseStage"
 	elseif R34_1311:existsClick("06_Next1.png") then -- if has next, click it.
 	elseif R34_1311:existsClick("06_Next.png") then -- if has next, click it.
 	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
 		return "ChooseFriend"
+	elseif R34_0011:exists("LeftTop_Return.png") then
+		-- keep return until ChooseStage.  Put this check at final.
+		self.state = "ChooseStage"
 	else
-		print("Error can't be handled. Stop Script.")
-		print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
-		scriptExit("Trust Manger finished")
+	    self.errorCount = self.errorCount + 1
+	    if self.errorCount > 3 then
+		    print("Error can't be handled. Stop Script.")
+		    print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
+		    scriptExit("Trust Manger finished")
+	    else
+	        print("Error count: " ..errorCount)
+	        toast("Error count: " ..errorCount)
+	        -- not to touch dog when error
+	        wait(2)
+	        return
+	    end
 	end
 
 	watchdog:touch()
