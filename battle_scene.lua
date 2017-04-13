@@ -126,26 +126,29 @@ function BattlePage:choose(idx)
 	local itemIdx = idx
 
 	if idx > 6 then
-		lines = math.ceil(idx / 2) - 3  -- 9: 2, 16: 5
-		pages = math.floor(lines / 3)  -- 9: 0, 16: 1
-		lines = lines - pages * 3     -- 9: 2, 16: 2
+		lines = math.ceil(idx / 2) - 3   -- 9: 2, 16: 5
+		pages = math.floor(lines / 3)    -- 9: 0, 16: 1
+		lines = lines - pages * 3        -- 9: 2, 16: 2
 		itemIdx = (idx - 1) % 2 + 4 + 1  -- 9: 5, 16: 6
 
 		self:pageUp(pages)
 		self:lineUp(lines)
 	end
-	click(self.locations[itemIdx])
+
+	return click(self.locations[itemIdx])
 end
 
 function BattlePage:lineUp(lines)
 	for i = 1,lines do
 		dragDrop(self.center, self.lineUpStep);
+		wait(0.1)
 	end
 end
 
 function BattlePage:pageUp(pages)
 	for i = 1, pages do
 		dragDrop(self.center, self.pageUpStep);
+		wait(0.1)
 	end
 end
 

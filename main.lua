@@ -56,29 +56,33 @@ end
 
 function chooseOrders()
     local UnitOrders = { "1", "2", "3", "4", "5", "6" }
-    local UnitOffsets = { "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1" }
-    
+    local UnitTargets = { "1", "2", "3", "4", "5", "6", "All" }
+
     dialogInit()
         addTextView("順序小的先發動, 相同的就按兵員順序")newRow()
-        addTextView("可調整距離上一個兵員發動的時間間隔")newRow()
+        addTextView("選擇是否為敵方, 若是己方則選擇治療目標")newRow()
+        addTextView("敵方不支援指定目標, 選什麼都無效")newRow()
         addTextView("沒有打勾的兵員最後會被Auto觸發")newRow()
         -- addSpinnerIndex and addSpinner accept only global variable
         for i = 1, 6 do
             addTextView("兵員"..i.." 順序")addSpinnerIndex("unitOrder"..i, UnitOrders, UnitOrders[3])
-            addTextView("間隔")addSpinnerIndex("unitOffset"..i, UnitOffsets, 1)newRow()
+            addCheckBox("unitIsEnemy"..i, "敵方?", true)addTextView("目標")
+            addSpinnerIndex("unitTarget"..i, UnitTargets, 7)newRow()
         end
-    dialogShow("Setting Actions")
+    dialogShow("Setting Actions 2")
 
     local orders = { unitOrder1, unitOrder2, unitOrder3, unitOrder4, unitOrder5, unitOrder6 }
-    local offsets = { unitOffset1, unitOffset2, unitOffset3, unitOffset4, unitOffset5, unitOffset6 }
+    local isEnemys = { unitIsEnemy1, unitIsEnemy2, unitIsEnemy3, unitIsEnemy4, unitIsEnemy5, unitIsEnemy6 }
+    local targets = { unitTarget1, unitTarget2, unitTarget3, unitTarget4, unitTarget5, unitTarget6 }
 
     -- clean used global variable
     for i = 1, 6 do
         _G["unitOrder"..i] = nil
-        _G["unitOffset"..i] = nil
+        _G["unitIsEnemy"..i] = nil
+        _G["unitTarget"..i] = nil
     end
 
-    return orders, offsets
+    return orders, isEnemys, targets
 end
 
 function chooseActions()
@@ -91,7 +95,7 @@ function chooseActions()
             addTextView("行動")addSpinnerIndex("unitAction"..i, UnitActions, 1)
             addTextView("欄位")addEditNumber("unitIndex"..i, 1)newRow()
         end
-    dialogShow("Setting Actions")
+    dialogShow("Setting Actions 1")
 
     -- fill tables.
     local enables = { unitEnable1, unitEnable2, unitEnable3, unitEnable4, unitEnable5, unitEnable6 }
@@ -256,44 +260,77 @@ elseif FUNC == 4 then
     end
     
     local enables, actions, indices = chooseActions()
-    local orders, offsets = chooseOrders()
+    local orders, isEnemys, targets = chooseOrders()
     scene = BattleScene()
 
+while true do
     for unit = 1, 6 do
         if enables[unit] then
             local action = actions[unit]
             -- ignore action == 1
             if action == 2 then
                 scene.units[unit]:abilityPage()
-                wait(0.2)
-                if not scene.page:choose(indices[unit]) then
+                wait(0.5)
+                if scene.page:choose(indices[unit]) then
+                    wait(1)
+                    if (isEnemys[unit] and (targets[unit] == 7)) then
+                        -- Do nothing
+                    elseif (isEnemys[unit] and (not (targets[unit] == 7))) then
+                        -- TODO Not support attack specified target now...
+                    elseif ((not isEnemys[unit]) and (targets[unit] == 7)) then
+                        scene.units[1]:submit()
+                        wait(0.5)
+                    elseif (not isEnemys[unit]) then
+                        scene.units[targets[unit]]:submit()
+                        wait(0.5)
+                    end
+                else
                     -- click right-bottom return
                 end
-                wait(0.3)
             elseif action == 3 then
-                scene.units[unit]:abilityPage()
-                wait(0.2)
-                if not scene.page:choose(indices[unit]) then
+                scene.units[unit]:itemPage()
+                wait(0.5)
+                if scene.page:choose(indices[unit]) then
+                    wait(1)
+                    if (isEnemys[unit] and (targets[unit] == 7)) then
+                        -- Do nothing
+                    elseif (isEnemys[unit] and (not (targets[unit] == 7))) then
+                        -- TODO Not support attack specified target now...
+                    elseif ((not isEnemys[unit]) and (targets[unit] == 7)) then
+                        scene.units[1]:submit()
+                        wait(0.5)
+                    elseif (not isEnemys[unit]) then
+                        scene.units[targets[unit]]:submit()
+                        wait(0.5)
+                    end
+                else
                     -- click right-bottom return
                 end
-                wait(0.3)
             elseif action == 4 then
                 scene.units[unit]:defence()
-                wait(0.2)
-                --scene.units[3]:submit()
-                wait(0.3)
+                wait(0.5)
             end
+            wait(0.1)
         end
     end
     
-    -- sort unit by orders
+    -- sort unit by orders, and submit
     for i = 1, 6 do
         local keys = {}
         keys = hasValue(orders, i)
         for j,unit in ipairs(keys) do
-            scene.units[unit]:submit()
+            if enables[unit] then
+                scene.units[unit]:submit()
+            end
         end
     end
     
+    dialogInit()
+        addTextView("行動, 請等到有行動力之後再按確認")newRow()
+        addRadioGroup("NEXT_ACTION", 1)
+            addRadioButton("Repeat", 1)
+            addRadioButton("Auto", 2)
+    dialogShow("Auto move pattern")
+end
 end
 
