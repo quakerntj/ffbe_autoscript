@@ -196,8 +196,6 @@ elseif FUNC == 3 then
         setBrightness(0)
     end
 
-	local BattleIndicator = Region(0, 1350, 40, 250)
-	local ResultIndicator = Region(380, 900, 220, 130)
 	local LastBattle = Timer()
 	setScanInterval(1)
 	local timeout = 0

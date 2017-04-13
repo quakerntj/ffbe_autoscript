@@ -87,3 +87,7 @@ DTABLE[1] = Location(DXN, DYN)
 
 DTABLE[5] = Location(DXC, DYC)
 
+BattleIndicator = Region(0, 1350, 40, 250)
+ResultIndicator = Region(380, 900, 220, 130)
+ResultExp = Region(560, 1000, 590, 400)
+
