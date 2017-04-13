@@ -259,6 +259,7 @@ elseif FUNC == 4 then
         return keys
     end
     
+    BTL_INTERACTION = true
     local enables, actions, indices = chooseActions()
     local orders, isEnemys, targets = chooseOrders()
     scene = BattleScene()
@@ -325,12 +326,19 @@ while true do
         end
     end
     
-    dialogInit()
-        addTextView("行動, 請等到有行動力之後再按確認")newRow()
-        addRadioGroup("NEXT_ACTION", 1)
-            addRadioButton("Repeat", 1)
-            addRadioButton("Auto", 2)
-    dialogShow("Auto move pattern")
+    if (R28_0711:existsClick("04_Auto.png")) then
+        wait(2)
+        click(getLastMatch())  -- cancel auto
+    end
+    
+    if BTL_INTERACTION then
+        dialogInit()
+            addTextView("行動, 請等到有行動力之後再按確認")newRow()
+            addRadioGroup("NEXT_ACTION", 1)
+                addRadioButton("Repeat", 1)
+                addRadioButton("Auto", 2)
+        dialogShow("Auto move pattern")
+    end
 end
 end
 
