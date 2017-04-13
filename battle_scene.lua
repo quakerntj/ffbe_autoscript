@@ -22,7 +22,7 @@ setmetatable(BattleUnit, {
 function BattleUnit.new(region)
 	local self = setmetatable({}, BattleUnit)
 	self.region = region
-	region:highlight(0.1)
+	--region:highlight(0.1)
 	local center = region:getCenter()
 	local x = center:getX()
 	local y = center:getY() - 127
@@ -102,9 +102,10 @@ function BattlePage.new(region, locations)
 	local self = setmetatable({}, BattlePage)
 	self.region = region
 	self.locations = locations
-	self.lineHeight = locations[3]:getY() - locations[1]:getY()
-	self.centerX = region:getCenter():getX()
-	self.centerY = region:getCenter():getY()
+	self.lineHeight = 243 -- TODO hardcode
+	-- region has bug in getCenter() we do it ourself
+	self.centerX = (locations[1]:getX() + locations[2]:getX()) / 2
+	self.centerY = locations[3]:getY()
 	self.center = Location(self.centerX, self.centerY)
 	self.lineUpStep = Location(self.centerX, self.centerY - self.lineHeight)
 	self.pageUpStep = Location(self.centerX, self.centerY - self.lineHeight * 3)
@@ -120,40 +121,36 @@ function BattlePage:choose(idx)
 			item 9 will need line up just 2 row.
 			item 16 will need line up 1 page and 2 row
 	--]]
-	local lineUp = 0
-	local pageUp = 0
-	local itemIdx = 1
+	local lines = 0
+	local pages = 0
+	local itemIdx = idx
 
 	if idx > 6 then
-		lineUp = math.ceil(idx / 2) - 3  -- 9: 2, 16: 5
-		pageUp = math.floor(lineUp / 3)  -- 9: 0, 16: 1
-		lineUp = lineUp - pageUp * 3     -- 9: 2, 16: 2
+		lines = math.ceil(idx / 2) - 3  -- 9: 2, 16: 5
+		pages = math.floor(lines / 3)  -- 9: 0, 16: 1
+		lines = lines - pages * 3     -- 9: 2, 16: 2
 		itemIdx = (idx - 1) % 2 + 4 + 1  -- 9: 5, 16: 6
 
-		self:pageUp(pageUp)
-		self:lineUp(lineUP)
+		self:pageUp(pages)
+		self:lineUp(lines)
 	end
 	click(self.locations[itemIdx])
 end
 
 function BattlePage:lineUp(lines)
 	for i = 1,lines do
-		DragDrop(self.center, self.lineUpStep);
+		dragDrop(self.center, self.lineUpStep);
 	end
-	
-	return true
 end
 
 function BattlePage:pageUp(pages)
 	for i = 1, pages do
-		DragDrop(self.center, self.pageUpStep);
+		dragDrop(self.center, self.pageUpStep);
 	end
-	
-	return true
 end
 
 function BattlePage:nextPage()
-	DragDrop(self.center, self.pageUpStep);
+	dragDrop(self.center, self.pageUpStep);
 	if self.ScrollRegion:exists("Battle_Page_Scroll_End.png") then
 		return false
 	end
@@ -197,10 +194,10 @@ function BattleScene.new()
 	BattleItemRegion = Region(18, 1585, 1393, 2302)
 	BattleItemLocations = {  -- Battle item location
 		Location(360, 1700),  -- Item 1
-		Location(360, 1960),  -- Item 3  -- Region(718, 1584, 1391-718, 1812-1584) Y gap 243
-		Location(360, 2200),  -- Item 5
 		Location(1080, 1700), -- Item 2
+		Location(360, 1960),  -- Item 3  -- Region(718, 1584, 1391-718, 1812-1584) Y gap 243
 		Location(1080, 1960), -- Item 4
+		Location(360, 2200),  -- Item 5
 		Location(1080, 2200), -- Item 6
 	}
    

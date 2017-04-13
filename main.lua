@@ -7,9 +7,9 @@ Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析�
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
 Settings:set("MinSimilarity", 0.85)
 
-setDragDropTiming(400, 100)			--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
-setDragDropStepCount(4)				--stepCount: 從啟始點到目的地分幾步移動完
-setDragDropStepInterval(100)	--intervalMs: 每次移動間停留幾毫秒
+setDragDropTiming(350, 350)	--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
+setDragDropStepCount(25)	--stepCount: 從啟始點到目的地分幾步移動完
+setDragDropStepInterval(16)	--intervalMs: 每次移動間停留幾毫秒
 
 screen = getAppUsableScreenSize()
 X = screen:getX()
@@ -55,71 +55,54 @@ function move(pattern)
 end
 
 function chooseOrders()
-    local unitOrder1 = 0
-    local unitOrder2 = 0
-    local unitOrder3 = 0
-    local unitOrder4 = 0
-    local unitOrder5 = 0
-    local unitOrder6 = 0
-    local unitOffset1 = 0 -- time unit is 0.1s
-    local unitOffset2 = 0
-    local unitOffset3 = 0
-    local unitOffset4 = 0
-    local unitOffset5 = 0
-    local unitOffset6 = 0
-
     local UnitOrders = { "1", "2", "3", "4", "5", "6" }
     local UnitOffsets = { "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1" }
     
     dialogInit()
         addTextView("順序小的先發動, 相同的就按兵員順序")newRow()
         addTextView("可調整距離上一個兵員發動的時間間隔")newRow()
+        addTextView("沒有打勾的兵員最後會被Auto觸發")newRow()
+        -- addSpinnerIndex and addSpinner accept only global variable
         for i = 1, 6 do
-            addTextView("兵員"..i.." 順序")addSpinnerIndex("unitOrder"..i, UnitOrders, 3)
+            addTextView("兵員"..i.." 順序")addSpinnerIndex("unitOrder"..i, UnitOrders, UnitOrders[3])
             addTextView("間隔")addSpinnerIndex("unitOffset"..i, UnitOffsets, 1)newRow()
         end
     dialogShow("Setting Actions")
+
     local orders = { unitOrder1, unitOrder2, unitOrder3, unitOrder4, unitOrder5, unitOrder6 }
     local offsets = { unitOffset1, unitOffset2, unitOffset3, unitOffset4, unitOffset5, unitOffset6 }
+
+    -- clean used global variable
+    for i = 1, 6 do
+        _G["unitOrder"..i] = nil
+        _G["unitOffset"..i] = nil
+    end
+
     return orders, offsets
 end
 
 function chooseActions()
-    local unitEnable1 = {}
-    local unitEnable2 = {}
-    local unitEnable3 = {}
-    local unitEnable4 = {}
-    local unitEnable5 = {}
-    local unitEnable6 = {}
-    local unitAction1 = {}
-    local unitAction2 = {}
-    local unitAction3 = {}
-    local unitAction4 = {}
-    local unitAction5 = {}
-    local unitAction6 = {}
-    local unitIndex1 = {}
-    local unitIndex2 = {}
-    local unitIndex3 = {}
-    local unitIndex4 = {}
-    local unitIndex5 = {}
-    local unitIndex6 = {}
-
     local UnitActions = { "攻擊", "能力", "道具", "防禦" }
     dialogInit()
         addTextView("輸入技能與道具的'欄位'自左向右, 然後換行, 由1開始, 1是極限技")newRow()
         addTextView("目前道具只能用在自己身上")newRow()
-        addCheckBox("unitEnable1", "兵員1", true)addTextView("行動")addSpinnerIndex("unitAction1", UnitActions, 1)addTextView("欄位")addEditNumber("unitIndex1", 1)newRow()
-        addCheckBox("unitEnable1", "兵員2", true)addTextView("行動")addSpinnerIndex("unitAction2", UnitActions, 1)addTextView("欄位")addEditNumber("unitIndex2", 1)newRow()
-        addCheckBox("unitEnable1", "兵員3", true)addTextView("行動")addSpinnerIndex("unitAction3", UnitActions, 1)addTextView("欄位")addEditNumber("unitIndex3", 1)newRow()
-        addCheckBox("unitEnable1", "兵員4", true)addTextView("行動")addSpinnerIndex("unitAction4", UnitActions, 1)addTextView("欄位")addEditNumber("unitIndex4", 1)newRow()
-        addCheckBox("unitEnable1", "兵員5", true)addTextView("行動")addSpinnerIndex("unitAction5", UnitActions, 1)addTextView("欄位")addEditNumber("unitIndex5", 1)newRow()
-        addCheckBox("unitEnable1", "兵員6", true)addTextView("行動")addSpinnerIndex("unitAction6", UnitActions, 1)addTextView("欄位")addEditNumber("unitIndex6", 1)newRow()
+        for i = 1, 6 do
+            addCheckBox("unitEnable"..i, "兵員"..i, true)
+            addTextView("行動")addSpinnerIndex("unitAction"..i, UnitActions, 1)
+            addTextView("欄位")addEditNumber("unitIndex"..i, 1)newRow()
+        end
     dialogShow("Setting Actions")
-    
+
     -- fill tables.
     local enables = { unitEnable1, unitEnable2, unitEnable3, unitEnable4, unitEnable5, unitEnable6 }
     local actions = { unitAction1, unitAction2, unitAction3, unitAction4, unitAction5, unitAction6 }
     local indices = { unitIndex1, unitIndex2, unitIndex3, unitIndex4, unitIndex5, unitIndex6 }
+
+    for i = 1, 6 do
+        _G["unitEnable"..i] = nil
+        _G["unitAction"..i] = nil
+        _G["unitIndex"..i] = nil
+    end
     return enables, actions, indices
 end
 
@@ -256,34 +239,61 @@ elseif FUNC == 3 then
 	vibrate(2)
 	
 	scriptExit("Auto move finish")
+--elseif FUNC == 4 then
+--    scene = BattleScene()
+--    scene.page:pageUp(1)
 elseif FUNC == 4 then
-    scene = BattleScene()
+    function hasValue(table, value)
+        local keys = {}
+        local z = 1
+        for k,v in ipairs(table) do
+            if v == value then
+                keys[z] = k
+                z = z + 1
+            end
+        end
+        return keys
+    end
+    
     local enables, actions, indices = chooseActions()
     local orders, offsets = chooseOrders()
+    scene = BattleScene()
+
     for unit = 1, 6 do
         if enables[unit] then
             local action = actions[unit]
+            -- ignore action == 1
             if action == 2 then
                 scene.units[unit]:abilityPage()
+                wait(0.2)
                 if not scene.page:choose(indices[unit]) then
                     -- click right-bottom return
                 end
+                wait(0.3)
             elseif action == 3 then
                 scene.units[unit]:abilityPage()
+                wait(0.2)
                 if not scene.page:choose(indices[unit]) then
                     -- click right-bottom return
                 end
+                wait(0.3)
             elseif action == 4 then
                 scene.units[unit]:defence()
-                scene.units[3]:submit()
+                wait(0.2)
+                --scene.units[3]:submit()
+                wait(0.3)
             end
         end
     end
     
-    -- sort orders in bubble
-    orderIndices = {}
-
-    table.sort(orders)
-    for i,n in ipairs(orders) do print(i .. " " .. n) end
+    -- sort unit by orders
+    for i = 1, 6 do
+        local keys = {}
+        keys = hasValue(orders, i)
+        for j,unit in ipairs(keys) do
+            scene.units[unit]:submit()
+        end
+    end
+    
 end
 

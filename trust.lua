@@ -55,9 +55,7 @@ function TrustManager.new()
 end
 
 function TrustManager:Looper()
-    if not DEBUG then
-        STEP = 1
-    end
+    if not DEBUG then STEP = 1 end
     ON_AUTO = false
     watchDog = WatchDog(10, self, self['dogBarking'])
 
@@ -175,9 +173,7 @@ function TrustManager:Looper()
     self.loopCount = 0
     self.state = self.States[STEP]
     while self.loopCount < CLEAR_LIMIT do
-        if DEBUG then
-            toast(self.state)
-        end
+        if DEBUG then toast(self.state) end
         -- run state machine
         newState = switch[self.state]()
         if not (newState == self.state) then
@@ -197,7 +193,7 @@ function TrustManager:Looper()
 end
 
 function TrustManager.dogBarking(self, watchdog)
-	toast("Watchdog barking")
+	if DEBUG then toast("Watchdog barking") end
 	if self.state == "Battle" then
     elseif (R13_0111:exists("Communication_Error.png")) then
         R13_0111:existsClick("OK.png")
