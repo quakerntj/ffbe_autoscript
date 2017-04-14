@@ -63,10 +63,8 @@ function DesignedBattle:triggerReturn()
 end
 
 function DesignedBattle:triggerAuto()
-    R28_0711:highlight(1)
     if R28_0711:exists("04_Auto.png") then
         match = R28_0711:getLastMatch()
-        match:highlight(1)
         R28_0711:click(match)
         wait(1)
         R28_0711:click(match) -- cancel auto
@@ -160,9 +158,9 @@ function DesignedBattle:run(data)
     local isEnemys = data.isEnemys
     local targets  = data.targets
 
-    local waitAction = 0.5
-    local waitChooseItem = 1
-    local waitChooseTarget = 0.5
+    local waitAction = 0.3
+    local waitChooseItem = 0.3
+    local waitChooseTarget = 0.3
     
     local units = self.scene.units
     local page = self.scene.page
@@ -226,11 +224,9 @@ function DesignedBattle:interaction(round)
     dialogInit()
         addTextView("請等到所有隊員皆有行動力之後再按確認")newRow()
         addRadioGroup("DB_ROUND_ACTION", 1)
-            if not (round == 1) then
-                addRadioButton("Repeat 指定回合指令", 1)
-                addRadioButton("執行本回合("..round.."指令", 2)
-            end
-            if round == 1 then
+            addRadioButton("Repeat 指定回合指令", 1)
+            addRadioButton("執行本回合("..round..")指令", 2)
+            if round ~= 1 then
                 addRadioButton("不增加回合, 重複上回合指令", 3)
                 addRadioButton("不增加回合, 並且使用Auto", 4)
                 addRadioButton("不增加回合, 並且使用Repeat", 5)
@@ -290,26 +286,20 @@ end
 
 
 function DesignedBattle:loop()
-    local rounds = self.rounds
-
     if (not self.init) then
         self:initialize()
     end
 
+    local rounds = self.rounds
     local data
     for round = 1, rounds do
         toast("round "..round)
-        repeat
-            local roundStart = self:hasRepeatButton()
-            if roundStart then
-                toast("pass")
-            end
-        until roundStart
+        repeat until self:hasRepeatButton()
 
         if self.needInteraction then
             self:interaction(round)
         end
-        toast("round "..round.."start")
+        toast("round "..round.."/"..rounds.."start")
 
         if self.roundAction == 1 then
             data = self:obtain(self.repeatRound)

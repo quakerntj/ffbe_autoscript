@@ -121,10 +121,10 @@ function BattlePage.new(region, locations)
 	self.lineHeight = 243 -- TODO hardcode
 	-- region has bug in getCenter() we do it ourself
 	self.centerX = (locations[1]:getX() + locations[2]:getX()) / 2
-	self.centerY = locations[3]:getY()
+	self.centerY = locations[5]:getY() - 100
 	self.center = Location(self.centerX, self.centerY)
 	self.lineUpStep = Location(self.centerX, self.centerY - self.lineHeight)
-	self.pageUpStep = Location(self.centerX, self.centerY - self.lineHeight * 3)
+	self.pageUpStep = Location(self.centerX, locations[1]:getY())
 	self.ScrollRegion = Region(1410, 1592, 20, 704)
 	return self
 end
@@ -150,11 +150,12 @@ function BattlePage:choose(idx)
 		self:pageUp(pages)
 		self:lineUp(lines)
 	end
-
-	return click(self.locations[itemIdx])
+	click(self.locations[itemIdx])
+        return true
 end
 
 function BattlePage:lineUp(lines)
+    if lines == 0 then return end
 	for i = 1,lines do
 		dragDrop(self.center, self.lineUpStep);
 		wait(0.1)
@@ -162,8 +163,9 @@ function BattlePage:lineUp(lines)
 end
 
 function BattlePage:pageUp(pages)
+    if pages == 0 then return end
 	for i = 1, pages do
-		dragDrop(self.center, self.pageUpStep);
+                dragDrop(self.center, self.pageUpStep);
 		wait(0.1)
 	end
 end

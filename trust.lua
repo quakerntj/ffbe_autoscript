@@ -45,7 +45,7 @@ function TrustManager.new()
 end
 
 function TrustManager:Looper()
-	if not DEBUG then STEP = 1 end
+	if not DEBUG then STEP = 2 end
 	ON_AUTO = false
 	watchDog = WatchDog(10, self, self['dogBarking'])
 
@@ -236,8 +236,8 @@ function TrustManager.dogBarking(self, watchdog)
 		    print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
 		    scriptExit("Trust Manger finished")
 	    else
-	        print("Error count: " ..errorCount)
-	        toast("Error count: " ..errorCount)
+	        print("Error count: " ..self.errorCount)
+	        toast("Error count: " ..self.errorCount)
 	        -- not to touch dog when error
 	        wait(2)
 	        return
