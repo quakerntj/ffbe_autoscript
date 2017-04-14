@@ -47,7 +47,7 @@ end
 function TrustManager:Looper()
 	if not DEBUG then STEP = 2 end
 	ON_AUTO = false
-	watchDog = WatchDog(10, self, self['dogBarking'])
+	watchDog = WatchDog(15, self, self['dogBarking'])
 
 	--local ResultNext = Region(600, 2200, 240, 100)
 	local ResultItemNextLocation = Location(720, 2250)
@@ -106,7 +106,6 @@ function TrustManager:Looper()
 			if (R34_1111:existsClick(friendChoice1)) then
 				return "Go"
 			elseif (R34_1111:existsClick(friendChoice2)) then
-				-- Run out of friend or forgot to set filter.
 				return "Go"
 			end
 			return "ChooseFriend"
@@ -128,8 +127,8 @@ function TrustManager:Looper()
 		end,
 		
 		["Battle"] = function(watchdog)
-			local inBattle = (not (BattleIndicator:exists("Battle.png") == nil))
-			if (inBattle and (not (watchdog == nil))) then
+			local inBattle = (BattleIndicator:exists("Battle.png") ~= nil)
+			if (inBattle and (watchdog ~= nil)) then
 				watchdog:touch()
 			end
 
@@ -168,7 +167,8 @@ function TrustManager:Looper()
 			click(l) -- speed up showing items
 			wait(0.5)
 			-- Result Next is bigger than other next...
-			if (R34_1311:existsClick("Result_Next.png"), 4) then
+			R34_1311:highlight(0.3)
+			if R34_1311:existsClick("Result_Next.png", 4) then
 			--if (click(ResultItemNextLocation)) then
 				if (FRIEND) then
 					-- Not to add new friend
@@ -191,7 +191,7 @@ function TrustManager:Looper()
 		if DEBUG then toast(self.state) end
 		-- run state machine
 		newState = switch[self.state](watchDog)
-		if newState ~= self.state) then
+		if newState ~= self.state then
 			self.state = newState
 			watchDog:touch()
 		end
@@ -214,8 +214,8 @@ function TrustManager.dogBarking(self, watchdog)
 
 	if DEBUG then toast("Watchdog barking") end
 	if (R13_0111:exists("Communication_Error.png")) then
-		R13_0111:existsClick("OK.png")
-	elseif R13_0111:existsClick("OK.png") then
+		R33_1111:existsClick("OK.png")
+	elseif R33_1111:existsClick("OK.png") then
 	elseif BattleIndicator:exists("Battle.png") then
 		self.state = "Battle"
 	elseif ResultIndicator:exists("BattleFinishResult.png") then

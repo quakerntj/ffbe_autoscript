@@ -35,20 +35,16 @@ setmetatable(BattleUnit, {
   end,
 })
 
-function BattleUnit.new(region)
+function BattleUnit.new(rect)
 	local self = setmetatable({}, BattleUnit)
-	self.region = region
-	--region:highlight(0.1)
-	local center = region:getCenter()
-	local x = center:getX()
-	local y = center:getY() - 127
-	self.location = Location(x, y) -- TODO Bug, center getY didn't divde to 2
+	self.rect = rect
+	self.center = rect:getCenter()
 	
 	local swipeStep = 400
-	self.swipeRight = Location(x + swipeStep, y)
-	self.swipeUp = Location(x, y - swipeStep)
-	self.swipeDown = Location(x, y + swipeStep)
-	self.swipeLeft = Location(x - swipeStep, y)
+	self.swipeRight = self.center + Point(swipeStep, 0)
+	self.swipeUp    = self.center + Point(0, -swipeStep)
+	self.swipeDown  = self.center + Point(0, swipeStep)
+	self.swipeLeft  = self.center + Point(-swipeStep, 0)
 	self.PageStatus = {
 		UnitPage = 0,
 		AbilityPage = 1,
@@ -69,40 +65,27 @@ function BattleUnit:reset()
 end
 
 function BattleUnit:checkExists()
-	return not ((self.region:exists("Limit.png")) == nil)
+	return not ((self.rect.region:exists("Limit.png")) == nil)
 end
 
 function BattleUnit:submit()
-	-- Check pageStatus is in unit page
---	if not self.pageStatus == 0 then
---		self.scene:return()
---	end
-	click(self.location)
+	click(self.center.location)
 end
 
 function BattleUnit:abilityPage()
-	dragDrop(self.location, self.swipeRight)
---	self.pageStatus = 1
---	self.actionStatus = 1
+	dragDrop(self.center.location, self.swipeRight.location)
 end
 
 function BattleUnit:attack()
-	dragDrop(self.location, self.swipeUp)
---	self.pageStatus = 1
---	self.actionStatus = 0
+	dragDrop(self.center.location, self.swipeUp.location)
 end
 
 function BattleUnit:item()
-	dragDrop(self.location, self.swipeLeft)
-	print(self.location:getX().." "..self.location:getY() .. "--" .. self.swipeLeft:getX().." "..self.swipeLeft:getY())
---	self.pageStatus = 1
---	self.actionStatus = 1
+	dragDrop(self.center.location, self.swipeLeft.location)
 end
 
 function BattleUnit:defence()
-	dragDrop(self.location, self.swipeDown)
---	self.pageStatus = 1
---	self.actionStatus = 1
+	dragDrop(self.center.location, self.swipeDown.location)
 end
 
 BattlePage = {}
@@ -114,18 +97,19 @@ setmetatable(BattlePage, {
   end,
 })
 
-function BattlePage.new(region, locations)
+function BattlePage.new(rect, rects)
 	local self = setmetatable({}, BattlePage)
-	self.region = region
-	self.locations = locations
-	self.lineHeight = 243 -- TODO hardcode
-	-- region has bug in getCenter() we do it ourself
-	self.centerX = (locations[1]:getX() + locations[2]:getX()) / 2
-	self.centerY = locations[5]:getY() - 100
-	self.center = Location(self.centerX, self.centerY)
-	self.lineUpStep = Location(self.centerX, self.centerY - self.lineHeight)
-	self.pageUpStep = Location(self.centerX, locations[1]:getY())
-	self.ScrollRegion = Region(1410, 1592, 20, 704)
+	self.rect = rect
+	self.rects = rects
+
+	local lineHeight = rects[3].y - rects[1].y
+	local centerX = (rects[1].x + rects[2].x) / 2
+	local centerY = rects[5]:getCenter().y
+
+	self.dragCenter = Point(centerX, centerY)
+	self.lineUpStep = Point(centerX, centerY -lineHeight)
+	self.pageUpStep = Point(centerX, centerY -lineHeight * 1.5)
+	self.ScrollRegion = Rect(1410, 1592, true, 20, 704)
 	return self
 end
 
@@ -150,14 +134,14 @@ function BattlePage:choose(idx)
 		self:pageUp(pages)
 		self:lineUp(lines)
 	end
-	click(self.locations[itemIdx])
-        return true
+	click(self.rects[itemIdx]:getCenter().location)
+    return true
 end
 
 function BattlePage:lineUp(lines)
     if lines == 0 then return end
 	for i = 1,lines do
-		dragDrop(self.center, self.lineUpStep);
+		dragDrop(self.dragCenter.location, self.lineUpStep.location);
 		wait(0.1)
 	end
 end
@@ -165,21 +149,26 @@ end
 function BattlePage:pageUp(pages)
     if pages == 0 then return end
 	for i = 1, pages do
-                dragDrop(self.center, self.pageUpStep);
+        dragDrop(self.dragCenter.location, self.pageUpStep.location);
+		wait(0.1)
+        dragDrop(self.dragCenter.location, self.pageUpStep.location);
 		wait(0.1)
 	end
 end
 
 function BattlePage:nextPage()
-	dragDrop(self.center, self.pageUpStep);
-	if self.ScrollRegion:exists("Battle_Page_Scroll_End.png") then
+	dragDrop(self.dragCenter.location, self.pageUpStep.location);
+	wait(0.1)
+	dragDrop(self.dragCenter.location, self.pageUpStep.location);
+	wait(0.1)
+	if self.ScrollRegion.region:exists("Battle_Page_Scroll_End.png") then
 		return false
 	end
 	return true
 end
 
 function BattlePage:existsChoose(pattern)
-	return self.region:existsClick(pattern)
+	return self.rect.region:existsClick(pattern)
 end
 
 BattleScene = {}
@@ -193,36 +182,36 @@ setmetatable(BattleScene, {
 
 function BattleScene.new()
 	local self = setmetatable({}, BattleScene)
-	local BattleUnitRegions = {
+	local BattleUnitRects = {
 		-- 715x256
-		Region(2, 1586, 715, 256), -- Unit 1
-		Region(2, 1844, 715, 256), -- Unit 2
-		Region(2, 2103, 715, 256), -- Unit 3
-		Region(719, 1586, 715, 256), -- Unit 4
-		Region(719, 1844, 715, 256), -- Unit 5
-		Region(719, 2103, 715, 256) -- Unit 6  Friend
+		Rect(2, 1586, true, 715, 256), -- Unit 1
+		Rect(2, 1844, true, 715, 256), -- Unit 2
+		Rect(2, 2103, true, 715, 256), -- Unit 3
+		Rect(719, 1586, true, 715, 256), -- Unit 4
+		Rect(719, 1844, true, 715, 256), -- Unit 5
+		Rect(719, 2103, true, 715, 256) -- Unit 6  Friend
 	}
 	
 	self.units = {
-		BattleUnit(BattleUnitRegions[1]),
-		BattleUnit(BattleUnitRegions[2]),
-		BattleUnit(BattleUnitRegions[3]),
-		BattleUnit(BattleUnitRegions[4]),
-		BattleUnit(BattleUnitRegions[5]),
-		BattleUnit(BattleUnitRegions[6])
+		BattleUnit(BattleUnitRects[1]),
+		BattleUnit(BattleUnitRects[2]),
+		BattleUnit(BattleUnitRects[3]),
+		BattleUnit(BattleUnitRects[4]),
+		BattleUnit(BattleUnitRects[5]),
+		BattleUnit(BattleUnitRects[6])
 	}
  
-	BattleItemRegion = Region(18, 1585, 1393, 2302)
-	BattleItemLocations = {  -- Battle item location
-		Location(360, 1700),  -- Item 1
-		Location(1080, 1700), -- Item 2
-		Location(360, 1960),  -- Item 3  -- Region(718, 1584, 1391-718, 1812-1584) Y gap 243
-		Location(1080, 1960), -- Item 4
-		Location(360, 2200),  -- Item 5
-		Location(1080, 2200), -- Item 6
+	BattleItemRect = Rect(18, 1585, true, 1393, 2302)
+	BattleItemRects = {
+	    Rect( 20, 1584, true, 675, 230),
+	    Rect(718, 1584, true, 675, 230),
+	    Rect( 20, 1827, true, 675, 230),
+	    Rect(718, 1827, true, 675, 230),
+	    Rect( 20, 2070, true, 675, 230),
+	    Rect(718, 2070, true, 675, 230),
 	}
    
-	self.page = BattlePage(BattleItemRegion, BattleItemLocations)
+	self.page = BattlePage(BattleItemRect, BattleItemRects)
 	
 	return self
 end

@@ -1,12 +1,12 @@
 #!/bin/bash
-echo $1
 if [ "$1" != "" -a -f "$1" ]; then
-    adb push $lua /sdcard/AnkuLua/ffbe_trust/
+    echo $1
+    adb push $1 //sdcard/AnkuLua/ffbe_trust/`dirname $1`
 else
     for lua in `ls -1 *.lua`
     do
         echo
         echo $lua
-        adb push $lua /sdcard/AnkuLua/ffbe_trust/
+        adb push $lua //sdcard/AnkuLua/ffbe_trust/
     done
 fi

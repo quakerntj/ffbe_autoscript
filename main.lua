@@ -16,6 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
+if Location == nil then
+    require("ankulua.lua")
+end
+
 WORK_DIR = scriptPath()
 package.path = package.path .. ";" .. WORK_DIR .. '?.lua'
 
@@ -24,9 +28,9 @@ Settings:setCompareDimension(true, 1440)--執行圖形比對時螢度的解析�
 Settings:setScriptDimension(true, 1440)--用於參考App解析度腳本內座標位置
 Settings:set("MinSimilarity", 0.85)
 
-setDragDropTiming(350, 350)	--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
-setDragDropStepCount(25)	--stepCount: 從啟始點到目的地分幾步移動完
-setDragDropStepInterval(16)	--intervalMs: 每次移動間停留幾毫秒
+setDragDropTiming(200, 220)	--downMs: 開始移動前壓住不動幾毫秒	upMs: 最後放開前停住幾毫秒
+setDragDropStepCount(35)	--stepCount: 從啟始點到目的地分幾步移動完
+setDragDropStepInterval(10)	--intervalMs: 每次移動間停留幾毫秒
 
 screen = getAppUsableScreenSize()
 X = screen:getX()

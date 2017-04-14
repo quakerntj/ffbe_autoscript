@@ -27,3 +27,119 @@ function hasValue(table, value)
     end
     return keys
 end
+
+Point = {}
+Point.__index = Point
+Point.mt = {
+	__call = function (cls, ...)
+		return cls.new(...)
+	end,
+}
+
+setmetatable(Point, Point.mt)
+
+function Point.new(x, y)
+	local self = {}
+	setmetatable(self, Point.mt)
+    self.x = x
+    self.y = y
+    self.location = Location(x, y)
+    return self
+end
+
+-- operator+
+function Point.add(a, b)
+    if (typeOf(b) == 'number') then
+        return Point(a.x + b, a.y + b)
+    else
+        return Point(a.x + b.x, a.y + b.y)
+    end
+end
+Point.mt.__add = Point.add
+
+-- operator*
+function Point.mul(a, b)
+    return Point(a.x * b, a.y * b)
+end
+Point.mt.__mul = Point.mul
+
+-- operator/
+function Point.div(a, b)
+    return Point(a.x / b, a.y / b)
+end
+Point.mt.__div = Point.div
+
+-- operator-
+function Point.sub(a, b)
+    if (typeOf(b) == 'number') then
+        return Point(a.x - b, a.y - b)
+    else
+        return Point(a.x - b.x, a.y - b.y)
+    end
+end
+Point.mt.__sub = Point.sub
+
+-- operator minus
+function Point.unm(a)
+    return Point(-a.x, -a.y)
+end
+Point.mt.__unm = Point.unm
+
+-- concatenation
+function Point.concat(lhs, rhs)
+    if (typeOf(lhs) == 'table') then
+        return "(" .. lhs.x .. "," .. lhs.y .. ")" .. rhs
+    else
+        return lhs .. "(" .. rhs.x .. "," .. rhs.y .. ")"
+    end
+end
+Point.mt.__concat = Point.concat
+
+
+Rect = {}
+Rect.__index = Rect
+
+setmetatable(Rect, {
+	__call = function (cls, ...)
+		return cls.new(...)
+	end,
+})
+
+-- x, y, w, h or x0, y0, x1, y1
+function Rect.new(x, y, isWH, w, h)
+	local self = setmetatable({}, Rect)
+	if isWH then
+	    self.x = x
+	    self.y = y
+	    self.w = w
+	    self.h = h
+    else
+        -- w,h is not width/height.  Subtract the offset.
+	    self.x = x
+	    self.y = y
+	    self.w = w - x
+	    self.h = h - y
+    end
+    self.region = Region(self.x, self.y, self.w, self.h)
+    return self
+end
+
+function Rect:getCenter()
+    return Point(self.x + self.w / 2, self.y + self.h / 2)
+end
+
+-- axis 1 and axis 2 are both widht and height.  Will be applied on left-top and right bottom
+function Rect:expand(x0, y0, x1, y1)
+    self.x = self.x - x0
+    self.y = self.y - y0
+    self.w = self.w - x1
+    self.h = self.h - y1
+    self.region = Region(self.x, self.y, self.w, self.h)
+end
+
+function Rect:move(x, y)
+    self.x = self.x + x0
+    self.y = self.y + y0
+    self.region = Region(self.x, self.y, self.w, self.h)
+end
+
