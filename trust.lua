@@ -2,18 +2,18 @@
 -- <https://github.com/quakerntj/ffbe_autoscript>
 
 --[[
-    This script is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This script is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This script is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This script is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
 TrustManager = {}
@@ -27,7 +27,7 @@ setmetatable(TrustManager, {
 
 function TrustManager.new()
 	local self = setmetatable({}, TrustManager)
-    self.errorCount = 0
+	self.errorCount = 0
 	self.States = {
 		"ChooseStage",
 		"ChooseLevel",
@@ -157,18 +157,19 @@ function TrustManager:Looper()
 			-- may have level up and trust up at the same time. click twice.
 			if (ResultExp:existsClick("07_Next_2.png")) then
 				wait(0.5)
-				click(getLastMatch())
+				click(ResultExp:getLastMatch())
 				return "ResultItem"
 			end
 			return "ResultExp"
 		end,
 		["ResultItem"] = function()
-			-- Result Next is bigger than other next...
 			wait(1)
 			local l = Location(X12, Y12)
 			click(l) -- speed up showing items
 			wait(0.5)
-			if (click(ResultItemNextLocation)) then
+			-- Result Next is bigger than other next...
+			if (R34_1311:existsClick("Result_Next.png"), 4) then
+			--if (click(ResultItemNextLocation)) then
 				if (FRIEND) then
 					-- Not to add new friend
 					existsClick("08_No_Friend1.png", 5)
@@ -190,7 +191,7 @@ function TrustManager:Looper()
 		if DEBUG then toast(self.state) end
 		-- run state machine
 		newState = switch[self.state](watchDog)
-		if not (newState == self.state) then
+		if newState ~= self.state) then
 			self.state = newState
 			watchDog:touch()
 		end
@@ -211,9 +212,10 @@ function TrustManager.dogBarking(self, watchdog)
 	friendChoice1 = "02_Pick_up_friend.png"
 	friendChoice2 = "02_No_friend.png"
 
-    if DEBUG then toast("Watchdog barking") end
+	if DEBUG then toast("Watchdog barking") end
 	if (R13_0111:exists("Communication_Error.png")) then
 		R13_0111:existsClick("OK.png")
+	elseif R13_0111:existsClick("OK.png") then
 	elseif BattleIndicator:exists("Battle.png") then
 		self.state = "Battle"
 	elseif ResultIndicator:exists("BattleFinishResult.png") then
@@ -223,25 +225,31 @@ function TrustManager.dogBarking(self, watchdog)
 	elseif exists(QUEST_NAME) then
 		self.state = "ChooseLevel"
 	elseif R34_1311:existsClick("06_Next1.png") then -- if has next, click it.
+		print("try click a next")
 	elseif R34_1311:existsClick("06_Next.png") then -- if has next, click it.
+		print("try click a next")
+	elseif R34_1311:existsClick("Result_Next.png") then -- if has next, click it.
+		print("try click a next")
 	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
 		return "ChooseFriend"
 	elseif R34_0011:exists("LeftTop_Return.png") then
 		-- keep return until ChooseStage.  Put this check at final.
 		self.state = "ChooseStage"
 	else
-	    self.errorCount = self.errorCount + 1
-	    if self.errorCount > 3 then
-		    print("Error can't be handled. Stop Script.")
-		    print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
-		    scriptExit("Trust Manger finished")
-	    else
-	        print("Error count: " ..self.errorCount)
-	        toast("Error count: " ..self.errorCount)
-	        -- not to touch dog when error
-	        wait(2)
-	        return
-	    end
+		self.errorCount = self.errorCount + 1
+		if self.errorCount > 3 then
+			print("Error can't be handled. Stop Script.")
+			print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
+			scriptExit("Trust Manger finished")
+			vibrate(2)
+		else
+			print("Error count: " ..self.errorCount)
+			toast("Error count: " ..self.errorCount)
+			DEBUG = true
+			vibrate(2)
+			-- not to touch dog when error
+			return
+		end
 	end
 
 	watchdog:touch()
