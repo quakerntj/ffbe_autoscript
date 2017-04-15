@@ -114,5 +114,5 @@ BattleReturn = Region(1180, 2320, 170, 140)
 CloseAndGoTo = Region(200, 1515, 1024, 134)
 
 FriendChangeOK = Region(660, 1380, 120, 80)
-FriendChange = Region(200, 110, 250, 130)
+FriendChange = Region(200, 1100, 250, 130)
 
