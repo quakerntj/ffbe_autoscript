@@ -28,6 +28,14 @@ function hasValue(table, value)
     return keys
 end
 
+function vibratePattern()
+	vibrate(2)
+	wait(1)
+	vibrate(2)
+	wait(1)
+	vibrate(2)
+end
+
 Point = {}
 Point.__index = Point
 Point.mt = {

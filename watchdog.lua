@@ -31,17 +31,21 @@ function WatchDog.new(timeout, obj, bark)
 	self.timer = Timer()
 	self.timer:set()
 	self.obj = obj
+	self.en = true
 	self.bark = bark -- callback function
 	return self
 end
 
 function WatchDog:touch()
 	self.timer:set()
-	self.lastTouch = self.timer:check()
+end
+
+function WatchDog:enable(b)
+    self.en = b
 end
 
 function WatchDog:awake()
-	if (self.timer:check() > self.timeout) then
+	if self.en and (self.timer:check() > self.timeout) then
 		self.bark(self.obj, self)  -- User should touch the dog themself.
 	end
 end

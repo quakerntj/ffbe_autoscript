@@ -58,8 +58,12 @@ function DesignedBattle.new(rounds)
 	return self
 end
 
+function DesignedBattle:hasReturn()
+    return BattleReturn:exists("Battle_return.png") ~= nil
+end
+
 function DesignedBattle:triggerReturn()
---    R18_0711:existsClick("right_bottom_return.png")
+    BattleReturn:existsClick("Battle_return.png")
 end
 
 function DesignedBattle:triggerAuto()
@@ -195,7 +199,7 @@ function DesignedBattle:run(data)
                         wait(waitChooseTarget)
                     end
                 else
-                    -- TODO click right-bottom return
+                    self:triggerReturn()
                 end
             end
             wait(0.1)

@@ -41,23 +41,59 @@ function TrustManager.new()
 		"ResultItem",
 		"Clear"
 	}
+    self:init()
 	return self
 end
 
-function TrustManager:Looper()
-	if not DEBUG then STEP = 2 end
-	ON_AUTO = false
-	watchDog = WatchDog(15, self, self['dogBarking'])
+function TrustManager:init()
+	self.step = 2
+
+    dialogInit()
+    CLEAR_LIMIT = 999                -- Step now
+    addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
+    --addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
+    addTextView("選擇關卡：")newRow()
+    addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
+    SCAN_INTERVAL = 2
+    addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
+    FRIEND = false
+    addCheckBox("FRIEND", "選擇朋友", false)newRow()
+    BUY = false
+    addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
+    if DEBUG then
+        STEP = 2
+        HIGHLIGHT_TIME = 0.7
+        addTextView("Begin STEP")addEditNumber("STEP", 2)newRow()
+        addTextView("Highlight time")addEditNumber("HIGHLIGHT_TIME", 0.7)newRow()
+    end
+    dialogShow("Trust Master Maker".." - "..X.." × "..Y)
+    setScanInterval(SCAN_INTERVAL)
+    
+    if BRIGHTNESS then
+        setBrightness(0)
+    end
+    
+    if DEBUG then
+        self.highlightTime = HIGHLIGHT_TIME
+        self.step = STEP
+    end
+end
+
+function TrustManager:looper()
+	if not DEBUG then self.step = 2 end
+	ON_AUTO = false  -- this must be global
+	self.watchdog = WatchDog(15, self, self['dogBarking'])
+	local watchdog = self.watchdog
 
 	--local ResultNext = Region(600, 2200, 240, 100)
 	local ResultItemNextLocation = Location(720, 2250)
 
 	if (QUEST == 1) then
-		QUEST_NAME= "01_The_Temple_of_Earth_Entry.png"
+		QUEST_NAME= "TheTempleofEarthEntry.png"
 	elseif (QUEST == 2) then
-		QUEST_NAME= "01_The_Temple_of_Earth_End.png"
+		QUEST_NAME= "TheTempleofEarthEnd.png"
 	else
-		QUEST_NAME= "01_The_Temple_of_Earth_Entry.png"
+		QUEST_NAME= "TheTempleofEarthEntry.png"
 	end
 
 	local friendChoice1 = ""
@@ -79,13 +115,16 @@ function TrustManager:Looper()
 		end,
 		
 		["ChooseLevel"] = function()
-			if (existsClick(QUEST_NAME)) then
+		    if DEBUG then R23_0111:highlight(self.highlightTime) end
+			if (R23_0111:existsClick(QUEST_NAME)) then
 				return "Challenge"
 			end
 			return "ChooseLevel"
 		end,
-		["Challenge"] = function()
+		["Challenge"] = function(watchdog)
+		    if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if (R34_1311:existsClick("06_Next.png")) then
+				watchdog:enable(true)
 				wait(0.8)
 				return "ChooseFriend"
 			elseif (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
@@ -96,6 +135,7 @@ function TrustManager:Looper()
 				BUY_LOOP = BUY_LOOP - 1
 			elseif (R34_1211:existsClick("Stamina_Back.png")) then
 				toast('體力不足，等待中...')
+				watchdog:enable(false)
 				setScanInterval(10)
 				wait(30)
 				setScanInterval(SCAN_INTERVAL)
@@ -103,6 +143,7 @@ function TrustManager:Looper()
 			return "Challenge"
 		end,
 		["ChooseFriend"] = function()
+		    if DEBUG then R34_1111:highlight(self.highlightTime) end
 			if (R34_1111:existsClick(friendChoice1)) then
 				return "Go"
 			elseif (R34_1111:existsClick(friendChoice2)) then
@@ -111,6 +152,7 @@ function TrustManager:Looper()
 			return "ChooseFriend"
 		end,
 		["Go"] = function()
+    		if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if (R34_1311:existsClick("03_Go.png")) then
 				return "IsInBattle"
 			end
@@ -119,14 +161,23 @@ function TrustManager:Looper()
 
 		["IsInBattle"] = function()
 			-- Make sure we are in battle.
+			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			if BattleIndicator:exists("Battle.png") then
 				ON_AUTO = false
 				return "Battle"
+			end
+			if DEBUG then FriendChange:highlight(self.highlightTime) end
+			if FriendChange:exists("FriendChange.png") then
+			    if DEBUG then FriendChangeOK:highlight(self.highlightTime) end
+			    if FriendChangeOK:existsClick("OK.png") then
+    			    return "ChooseFirend"
+			    end
 			end
 			return "IsInBattle"
 		end,
 		
 		["Battle"] = function(watchdog)
+    		if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			local inBattle = (BattleIndicator:exists("Battle.png") ~= nil)
 			if (inBattle and (watchdog ~= nil)) then
 				watchdog:touch()
@@ -137,6 +188,7 @@ function TrustManager:Looper()
 				setScanInterval(SCAN_INTERVAL)
 				return "ResultGil"
 			elseif (R28_0711:existsClick("04_Auto.png")) then
+				if DEBUG then R28_0711:highlight(self.highlightTime) end
 				ON_AUTO = true
 				setScanInterval(10)
 			end
@@ -145,7 +197,9 @@ function TrustManager:Looper()
 
 		["ResultGil"] = function()
 			-- click "GIL" icon for speed up and skip rank up
-			ResultIndicator:existsClick("BattleFinishResult.png")
+			if DEBUG then ResultGil:highlight(self.highlightTime) end
+			ResultGil:existsClick("ResultGil.png")
+			if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if R34_1311:existsClick("06_Next1.png") then
 				return "ResultExp"
 			end
@@ -154,8 +208,9 @@ function TrustManager:Looper()
 		
 		["ResultExp"] = function()
 			-- may have level up and trust up at the same time. click twice.
-			if (ResultExp:existsClick("07_Next_2.png")) then
-				wait(0.5)
+		    if DEBUG then ResultExp:highlight(self.highlightTime) end
+			if (ResultExp:existsClick("ResultExp.png")) then
+				wait(0.2)
 				click(ResultExp:getLastMatch())
 				return "ResultItem"
 			end
@@ -167,7 +222,7 @@ function TrustManager:Looper()
 			click(l) -- speed up showing items
 			wait(0.5)
 			-- Result Next is bigger than other next...
-			R34_1311:highlight(0.3)
+		    if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if R34_1311:existsClick("Result_Next.png", 4) then
 			--if (click(ResultItemNextLocation)) then
 				if (FRIEND) then
@@ -184,54 +239,67 @@ function TrustManager:Looper()
 	local questTimer = Timer()
 	self.totalTimer:set()
 	questTimer:set()
+	local pause = false
 	
 	self.loopCount = 0
-	self.state = self.States[STEP]
+	self.state = self.States[self.step]
 	while self.loopCount < CLEAR_LIMIT do
+	    setVolumeDetect(true)
+	    wait(0.2)
+        if (isVolumeDown()) then self:init() end
+    	setVolumeDetect(false)
+
 		if DEBUG then toast(self.state) end
 		-- run state machine
-		newState = switch[self.state](watchDog)
+		newState = switch[self.state](watchdog)
 		if newState ~= self.state then
 			self.state = newState
-			watchDog:touch()
+			watchdog:touch()
 		end
-		watchDog:awake()
+		watchdog:awake()
 		
 		if (self.state == "Clear") then
 			self.state = "ChooseLevel"
 			self.loopCount = self.loopCount + 1
-			toast("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..questTimer:check().."s)")
+			local msg = "Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..questTimer:check().."s)"
+			toast(msg)
+            setStopMessage(msg)
 			questTimer:set()
 			self.errorCount = 0
 		end
 	end
-	print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
+    print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
 end
 
 function TrustManager.dogBarking(self, watchdog)
-	friendChoice1 = "02_Pick_up_friend.png"
-	friendChoice2 = "02_No_friend.png"
+	local friendChoice1 = "02_Pick_up_friend.png"
+	local friendChoice2 = "02_No_friend.png"
 
 	if DEBUG then toast("Watchdog barking") end
 	if (R13_0111:exists("Communication_Error.png")) then
 		R33_1111:existsClick("OK.png")
+	elseif CloseAndGoTo:exists("GoTo.png") then
+        -- If you finish 3 battle after daily timer reset, a dialog will popup.
+	    CloseAndGoTo:existsClick("Close.png")
+	    self.state = "ChooseStage"
 	elseif R33_1111:existsClick("OK.png") then
+		print("try click an OK")
 	elseif BattleIndicator:exists("Battle.png") then
 		self.state = "Battle"
-	elseif ResultIndicator:exists("BattleFinishResult.png") then
+	elseif ResultGil:exists("ResultGil.png") then
 		self.state = "ResultGil"
-	elseif ResultExp:exists("07_Next_2.png") then
+	elseif ResultExp:exists("ResultExp.png") then
 		self.state = "ResultExp"
-	elseif exists(QUEST_NAME) then
+	elseif R23_0111:exists(QUEST_NAME) then
 		self.state = "ChooseLevel"
+	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
+		self.state = "ChooseFriend"
 	elseif R34_1311:existsClick("06_Next1.png") then -- if has next, click it.
 		print("try click a next")
 	elseif R34_1311:existsClick("06_Next.png") then -- if has next, click it.
 		print("try click a next")
 	elseif R34_1311:existsClick("Result_Next.png") then -- if has next, click it.
 		print("try click a next")
-	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
-		return "ChooseFriend"
 	elseif R34_0011:exists("LeftTop_Return.png") then
 		-- keep return until ChooseStage.  Put this check at final.
 		self.state = "ChooseStage"
@@ -240,17 +308,16 @@ function TrustManager.dogBarking(self, watchdog)
 		if self.errorCount > 3 then
 			print("Error can't be handled. Stop Script.")
 			print("Quest clear:"..self.loopCount.."/"..CLEAR_LIMIT.."("..self.totalTimer:check().."s)")
+			vibratePattern()
 			scriptExit("Trust Manger finished")
-			vibrate(2)
+			return
 		else
 			print("Error count: " ..self.errorCount)
 			toast("Error count: " ..self.errorCount)
 			DEBUG = true
-			vibrate(2)
+			vibratePattern()
 			-- not to touch dog when error
 			return
 		end
 	end
-
-	watchdog:touch()
 end
