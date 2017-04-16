@@ -37,8 +37,8 @@ X = screen:getX()
 Y = 2560 --screen:getY() will not get right full screen size.
 DEBUG = true
 
-require("screen_config")
 require("tools")
+require("screen_config")
 require("battle_scene")
 require("designed_battle")
 require("watchdog")
@@ -187,11 +187,17 @@ elseif FUNC == 3 then
 	vibrate(2)
 	
 	scriptExit("Auto move finish")
---elseif FUNC == 4 then
---    scene = BattleScene()
---    scene.page:pageUp(1)
 elseif FUNC == 4 then
     db = DesignedBattle(2)
     db:loop()
+elseif FUNC == 5 then
+-- TODO find out the trust percentage.  OCR didn't work for Android N...
+--    for i, rect in ipairs(TrustPercentageRects) do
+--        rect.region:highlight(1)
+--    end
+--    for i, rect in ipairs(TrustPercentageRects) do
+--        local number, b = numberOCRNoFindException(rect.region,"trust")
+--        if b then print(number) end
+--    end
 end
 

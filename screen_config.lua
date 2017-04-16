@@ -116,3 +116,9 @@ CloseAndGoTo = Region(200, 1515, 1024, 134)
 FriendChangeOK = Region(660, 1380, 120, 80)
 FriendChange = Region(200, 1100, 250, 130)
 
+TrustPercentageRectStep = 367
+TrustPercentageRects = {}
+for i = 1,5 do
+    local step = TrustPercentageRectStep * (i - 1)  -- Oops, Lua can't count i from 0.
+    TrustPercentageRects[i] = Rect(1160, 400 + step, true, 165, 56)
+end
