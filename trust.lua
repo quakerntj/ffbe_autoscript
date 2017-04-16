@@ -178,7 +178,7 @@ function TrustManager:looper()
 			if FriendChange:exists("FriendChange.png") then
 				if DEBUG then FriendChangeOK:highlight(self.highlightTime) end
 				if FriendChangeOK:existsClick("OK.png") then
-					return "ChooseFirend"
+					return "ChooseFriend"
 				end
 			end
 			return "IsInBattle"
