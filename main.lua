@@ -34,7 +34,11 @@ setDragDropStepInterval(10)	--intervalMs: 每次移動間停留幾毫秒
 
 screen = getAppUsableScreenSize()
 X = screen:getX()
-Y = 2560 --screen:getY() will not get right full screen size.
+if (screen:getY() / 2560) > 0.93 then
+    Y = 2560 --screen:getY() will not get right full screen size.
+else
+    Y = screen:getY()
+end
 DEBUG = true
 
 require("tools")
@@ -43,40 +47,8 @@ require("battle_scene")
 require("designed_battle")
 require("watchdog")
 require("trust")
+require("explore")
 
-function move(pattern)
-    math.randomseed(os.time())
-    if pattern == 6 then
-        pattern = math.random(1,5)
-    end
-    inverse = math.random(0,1)
-
-    directions = {}
-    dirsCount = 0
-    if pattern == 1 then -- \
-        directions = {7, 7, 7, 3, 7, 7, 3, 7, 7, 7}
-    elseif pattern == 2 then -- |
-        directions = {8, 8, 8, 2, 8, 8, 2, 8, 8, 8}
-    elseif pattern == 3 then -- /
-        directions = {9, 9, 9, 1, 9, 9, 1, 9, 9, 9}
-    elseif pattern == 4 then -- -
-        directions = {4, 6, 4, 6, 4, 6, 4, 6, 4, 6}
-    elseif pattern == 5 then -- O
-        directions = {4, 7, 8, 9, 6, 3, 2, 1, 4, 6}
-    end
-    
-    if inverse == 1 then
-        invDirs = {}
-        for i,v in ipairs(directions) do
-          invDirs[11 - i] = 10 - v
-        end
-        directions = invDirs
-    end
-    
-    for i, v in ipairs(directions) do
-        touchMove(DTABLE[v], 1)
-    end
-end
 
 -- ========== Dialogs ================
 
@@ -86,9 +58,8 @@ addRadioGroup("FUNC", 1)
     addRadioButton("刷土廟", 1)
     addRadioButton("自動點擊REPEAT", 2)
     addRadioButton("自動移動", 3)
-    if DEBUG then
-        addRadioButton("測試", 4)
-    end
+    addRadioButton("測試1", 4)
+    addRadioButton("測試2", 5)
     newRow()
 BRIGHTNESS = false IMMERSIVE = true
 addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
@@ -119,77 +90,14 @@ elseif FUNC == 2 then
         FINISH = REPEAT_COUNT == 0
     until FINISH
     scriptExit("Repeat finish")
-
 elseif FUNC == 3 then
-    dialogInit()
-        MOVE_PATTERN = 1
-        TIMEOUT_LIMIT = 5
-        addTextView("請設定為滑動移動而不是螢幕搖桿")newRow()
-        addTextView("第一場戰鬥請記得手動按Auto")newRow()
-        addTextView("每隔120秒無戰鬥會振動, 每振動")addEditNumber("TIMEOUT_LIMIT", 5)
-        addTextView("次會中止script")newRow()
-        addRadioGroup("MOVE_PATTERN", 1)
-            addRadioButton("\\", 1)
-            addRadioButton("|", 2)
-            addRadioButton("/", 3) newRow()
-
-            addRadioButton("-", 4)
-            addRadioButton("O", 5)
-            addRadioButton("Rnd", 6) newRow()
-    dialogShow("Auto move pattern")
-
-    if BRIGHTNESS then
-        setBrightness(0)
-    end
-
-	local LastBattle = Timer()
-	setScanInterval(1)
-	local timeout = 0
-	local battleCount = 0
-	local isTouchDown = false
-	repeat
-	    -- TODO If enter door
-		if (BattleIndicator:exists("Battle.png")) then
-			toast("In Battle")
-			if isTouchDown then
-                touchUp(DTABLE[5], 0.2)
-                isTouchDown = false
-            end
-			repeat
-				if (not BattleIndicator:exists("Battle.png")) then
-    				ResultGil:existsClick("ResultGil.png")
-					LastBattle:set()
-				    break
-				end
-			until false
-			battleCount = battleCount + 1
-			toast("Battle count: "..battleCount)
-		end
-		if LastBattle:check() > 120 then
-		    -- Notify user should move to next area, and reset timer for next 120s
-        	vibrate(2)
-			LastBattle:set()
-        	timeout = timeout + 1
-        	print("Timeout"..timeout)
-        	if timeout >= TIMEOUT_LIMIT then
-        	    break
-        	end
-		end
-        if not isTouchDown then
-            touchDown(DTABLE[5], 0.2)
-            isTouchDown = true
-        end
-		move(MOVE_PATTERN)
-		FINISH = false
-	until FINISH
-	vibrate(2)
-	wait(1)
-	vibrate(2)
-	
-	scriptExit("Auto move finish")
+    explorer = Explorer()
+    explorer:run()
+    scriptExit("Repeat finish")
 elseif FUNC == 4 then
     db = DesignedBattle(2)
     db:loop()
+    scriptExit("Repeat finish")
 elseif FUNC == 5 then
 -- TODO find out the trust percentage.  OCR didn't work for Android N...
 --    for i, rect in ipairs(TrustPercentageRects) do

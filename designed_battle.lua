@@ -48,10 +48,9 @@ setmetatable(DesignedBattle, {
 	end,
 })
 
-function DesignedBattle.new(rounds)
+function DesignedBattle.new()
 	local self = setmetatable({}, DesignedBattle)
 	self.init = false
-	self.rounds = rounds
     self.scene = BattleScene()
     self.roundsData = {}
     self.roundAction = 1
@@ -99,6 +98,7 @@ function DesignedBattle:chooseOrders(data, round)
     dialogInit()
         addTextView("順序小的先發動, 相同的就按兵員順序")newRow()
         addTextView("選擇是否為敵方, 若是己方則選擇治療目標")newRow()
+        addTextView("目前不支援連續詠唱, w黑魔法")newRow()
         addTextView("敵方不支援指定目標, 選什麼都無效")newRow()
         addTextView("沒有打勾的兵員最後會被Auto觸發")newRow()
         -- addSpinnerIndex and addSpinner accept only global variable
@@ -126,7 +126,6 @@ function DesignedBattle:chooseActions(data, round)
     UnitActions = { "攻擊", "能力", "道具", "防禦" }
     dialogInit()
         addTextView("輸入技能與道具的'欄位'自左向右, 然後換行, 由1開始, 1是極限技")newRow()
-        addTextView("目前道具只能用在自己身上")newRow()
         for i = 1, 6 do
         offset = i + (round - 1) * 6
             addCheckBox("unitEnable"..i, "兵員"..i, true)
@@ -287,7 +286,6 @@ function DesignedBattle:obtain(round)
     end
     return data
 end
-
 
 function DesignedBattle:loop()
     if (not self.init) then
