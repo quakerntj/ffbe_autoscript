@@ -104,7 +104,7 @@ function Explorer:run()
 			        end
 		        else
 		            if DEBUG then R23_0111:highlight(0.2) end
-		            repeat R23_0111:exists("ResultGil.png")
+		            repeat until R23_0111:exists("ResultGil.png")
 				    repeat
         				wait(0.5)
         				click(R23_0111:getLastMatch())
