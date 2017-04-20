@@ -126,7 +126,9 @@ function Explorer:run()
 					LastBattle:set()
 					
 					battleCount = battleCount + 1
-					toast("Battle count: "..battleCount)
+					local msg = "Battle count: "..battleCount
+					toast(msg)
+					setStopMessage(msg)
 					break
 				end
 			until false
