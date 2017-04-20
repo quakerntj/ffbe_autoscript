@@ -197,9 +197,6 @@ function TrustManager:looper()
 		["Battle"] = function(watchdog, trust)
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			local inBattle = (BattleIndicator:exists("Battle.png") ~= nil)
-			if (inBattle and (watchdog ~= nil)) then
-				watchdog:touch()
-			end
 			if inBattle then
 				if trust.useAbility and trust.db:hasRepeatButton() then
 					ON_AUTO = true  -- means not need click auto button
@@ -219,6 +216,9 @@ function TrustManager:looper()
 				ON_AUTO = false
 				setScanInterval(SCAN_INTERVAL)
 				return "ResultGil"
+			end
+			if (inBattle and (watchdog ~= nil)) then
+				watchdog:touch()
 			end
 			return "Battle"
 		end,

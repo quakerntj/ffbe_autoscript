@@ -54,6 +54,7 @@ function DesignedBattle.new()
     self.scene = BattleScene()
     self.roundsData = {}
     self.roundAction = 1
+    self.trigger = true
 	return self
 end
 
