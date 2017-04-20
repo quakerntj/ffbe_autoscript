@@ -13,10 +13,16 @@ This script has following features:
   * Auto battle
   * Use abilities.
   * Use items.
+  * Can use Gem to full stamina
+  * WatchDog for timeout.  And do error handling.
+  * Not to add new friend.
+  * Can choose friend company or not.
+  * Can cancel daily issue dialog.
 * Run exploration
   * Auto move, But you need make sure player not go to next room.
   * Auto Battle
   * Use abilities
   * Use items.
+  * Vibrate notification when reaching specified battle number or timeout.
 
 If you need new feature or meet problems, go to discuss page or mail me.
