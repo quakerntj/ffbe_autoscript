@@ -82,6 +82,7 @@ R34_1211 = Region(X13, Y12, X13, Y14)
 R34_1311 = Region(X13, Y34, X13, Y14)
 R28_0711 = Region(0, Y78, X12, Y18)
 R24_1211 = Region(X12, Y12, X12, Y14)
+R24_0113 = Region(0, Y14, X12, Y34)
 R58_2611 = Region(X25, Y34, X15, Y18)
 R18_0711 = Region(0, Y78, X, Y18)
 

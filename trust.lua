@@ -32,6 +32,8 @@ function TrustManager.new()
 	self.highlightTime = 0.7
 	self.watchdog = WatchDog(15, self, self['dogBarking'])
 	self.debug = false
+	self.useAbility = false
+	self.battleRound = 0
 
 	self.initlaState = 2  -- States index
 	self.state = "ChooseLevel"
@@ -66,6 +68,8 @@ function TrustManager:init()
 	addCheckBox("FRIEND", "選擇朋友", false)newRow()
 	BUY = false
 	addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
+	BATTLE_ABILITY = false
+	addCheckBox("BATTLE_ABILITY", "戰鬥第一回合開始使用技能, 之後Repeat", false) newRow()
 	if DEBUG then
 		STATE = 2
 		HIGHLIGHT_TIME = 0.7
@@ -76,6 +80,12 @@ function TrustManager:init()
 	setScanInterval(SCAN_INTERVAL)
 	
 	self.clearLimit = CLEAR_LIMIT
+	
+	self.useAbility = BATTLE_ABILITY
+    if self.useAbility then
+    	self.db = DesignedBattle()
+	    self.data = self.db:obtain(1)  -- a dialog to set ability when first time obtain.
+    end
 	
 	if BRIGHTNESS then
 		setBrightness(0)
@@ -124,8 +134,8 @@ function TrustManager:looper()
 		end,
 		
 		["ChooseLevel"] = function()
-			if DEBUG then R23_0111:highlight(self.highlightTime) end
-			if (R23_0111:existsClick(QUEST_NAME)) then
+			if DEBUG then R24_0113:highlight(self.highlightTime) end
+			if (R24_0113:existsClick(QUEST_NAME)) then
 				return "Challenge"
 			end
 			return "ChooseLevel"
@@ -184,21 +194,31 @@ function TrustManager:looper()
 			return "IsInBattle"
 		end,
 		
-		["Battle"] = function(watchdog)
+		["Battle"] = function(watchdog, trust)
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			local inBattle = (BattleIndicator:exists("Battle.png") ~= nil)
 			if (inBattle and (watchdog ~= nil)) then
 				watchdog:touch()
 			end
-
-			if (ON_AUTO and (not inBattle)) then
+			if inBattle then
+				if trust.useAbility and trust.db:hasRepeatButton() then
+					ON_AUTO = true  -- means not need click auto button
+    	    		trust.battleRound = trust.battleRound + 1
+        		    if trust.battleRound > 1 then
+                        trust.db:triggerRepeat()
+                	else    			   
+        	        	trust.db:run(trust.data)
+  	    	  	    end
+		        elseif (not ON_AUTO and R28_0711:existsClick("04_Auto.png")) then
+					if DEBUG then R28_0711:highlight(self.highlightTime) end
+					ON_AUTO = true
+					setScanInterval(10)
+				end
+		    elseif (ON_AUTO and (not inBattle)) then
+				trust.battleRound = 0
 				ON_AUTO = false
 				setScanInterval(SCAN_INTERVAL)
 				return "ResultGil"
-			elseif (R28_0711:existsClick("04_Auto.png")) then
-				if DEBUG then R28_0711:highlight(self.highlightTime) end
-				ON_AUTO = true
-				setScanInterval(10)
 			end
 			return "Battle"
 		end,
@@ -257,7 +277,7 @@ function TrustManager:looper()
 		if DEBUG then toast(self.state) end
 
 		-- run state machine
-		newState = switch[self.state](watchdog)
+		newState = switch[self.state](watchdog, self)
 		if newState ~= self.state then
 			self.state = newState
 			watchdog:touch()
@@ -303,7 +323,7 @@ function TrustManager.dogBarking(self, watchdog)
 		self.state = "ResultGil"
 	elseif ResultExp:exists("ResultExp.png") then
 		self.state = "ResultExp"
-	elseif R23_0111:exists(QUEST_NAME) then
+	elseif R24_0113:exists(QUEST_NAME) then
 		self.state = "ChooseLevel"
 	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
 		self.state = "ChooseFriend"

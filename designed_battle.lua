@@ -92,7 +92,7 @@ function DesignedBattle:triggerRepeat()
 end
 
 function DesignedBattle:chooseOrders(data, round)
-    local UnitOrders = { "1", "2", "3", "4", "5", "6" }
+    local UnitOrders = { "1", "2", "3", "4", "5", "6", "Auto" }
     local UnitTargets = { "1", "2", "3", "4", "5", "6", "All" }
 
     dialogInit()
@@ -207,7 +207,7 @@ function DesignedBattle:run(data)
     
     if not self.trigger then return end
 
-    -- Sort unit by orders, and Submit
+    -- Sort unit by orders, and Submit.  7 is Auto, and will be filter out.
     for i = 1, 6 do
         local keys = {}
         keys = hasValue(orders, i)
