@@ -117,6 +117,16 @@ CloseAndGoTo = Region(200, 1515, 1024, 134)
 FriendChangeOK = Region(660, 1380, 120, 80)
 FriendChange = Region(200, 1100, 250, 130)
 
+QuestRegion = Region(65, 650, 85, 1900)
+
+QuestLocations = {
+    Location(250, 1250 - 378),  -- exploration quest
+    Location(250, 1250), -- Step 378
+    Location(250, 1250 + 378),
+    Location(250, 1250 + 378 * 2),
+    Location(250, 1250 + 378 * 3),
+}
+
 TrustPercentageRectStep = 367
 TrustPercentageRects = {}
 for i = 1,5 do

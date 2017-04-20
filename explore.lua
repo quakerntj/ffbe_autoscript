@@ -36,7 +36,6 @@ function Explorer:init()
         MOVE_PATTERN = 1
         TIMEOUT_LIMIT = 5
         addTextView("請設定為滑動移動而不是螢幕搖桿")newRow()
-        addTextView("第一場戰鬥請記得手動按Auto")newRow()
         addTextView("每隔120秒無戰鬥會振動, 每振動")addEditNumber("TIMEOUT_LIMIT", 5)
         addTextView("次會中止script")newRow()
         addRadioGroup("MOVE_PATTERN", 1)
@@ -78,6 +77,7 @@ function Explorer:run()
 	local timeout = 0
 	local battleCount = 0
 	local isTouchDown = false
+	local isAutoActivate = false
 	repeat
 	    -- TODO If enter door
 		if (BattleIndicator:exists("Battle.png")) then
@@ -86,6 +86,10 @@ function Explorer:run()
                 touchUp(DTABLE[5], 0.2)
                 isTouchDown = false
             end
+            if not self.useAbility and self.db:hasRepeatButton() then
+                isAutoActivate = self.db:clickAuto()
+	        end
+
             local battleRound = 0
 			repeat
 	            if DEBUG then BattleIndicator:highlight(0.2) end

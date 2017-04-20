@@ -66,6 +66,10 @@ function DesignedBattle:triggerReturn()
     BattleReturn:existsClick("Battle_return.png")
 end
 
+function DesignedBattle:clickAuto()
+    return R28_0711:existsClick("04_Auto.png") ~= nil
+end
+
 function DesignedBattle:triggerAuto()
     if R28_0711:exists("04_Auto.png") then
         match = R28_0711:getLastMatch()
@@ -105,7 +109,7 @@ function DesignedBattle:chooseOrders(data, round)
         -- addSpinnerIndex and addSpinner accept only global variable
         for i = 1, 6 do
             addTextView("兵員"..i.." 順序")addSpinnerIndex("unitOrder"..i, UnitOrders, UnitOrders[3])
-            addCheckBox("unitIsEnemy"..i, "敵方?", true)addTextView("目標")
+            addCheckBox("unitIsEnemy"..i, "目標敵方? ", true)addTextView("目標")
             addSpinnerIndex("unitTarget"..i, UnitTargets, 7)newRow()
         end
     dialogShow("順序與目標 for Round "..round)
