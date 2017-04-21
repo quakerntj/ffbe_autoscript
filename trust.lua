@@ -50,18 +50,20 @@ function TrustManager.new()
 		"ResultItem",
 		"Clear"
 	}
+	self.switch = {}
 
 	self:init()
 	return self
 end
 
 function TrustManager:init()
+    local QuestList = { "1", "2", "3", "4", "5", "土廟" }
+    QUEST = 1
 	dialogInit()
 	CLEAR_LIMIT = 999
 	addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
 	--addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
-	addTextView("選擇關卡：")newRow()
-	addRadioGroup("QUEST", 1)addRadioButton("入口", 1)addRadioButton("最深處", 2)newRow()
+	addTextView("選擇關卡：")addSpinnerIndex("QUEST", QuestList, 6)newRow()
 	SCAN_INTERVAL = 2
 	addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
 	FRIEND = false
@@ -78,7 +80,7 @@ function TrustManager:init()
 	end
 	dialogShow("Trust Master Maker".." - "..X.." × "..Y)
 	setScanInterval(SCAN_INTERVAL)
-	
+	self.quest = QUEST
 	self.clearLimit = CLEAR_LIMIT
 	
 	self.useAbility = BATTLE_ABILITY
@@ -99,6 +101,24 @@ function TrustManager:init()
 	self.debug = DEBUG
 end
 
+function hasQuest(isDungeon, idx)
+	local icon
+	if isDungeon then
+		icon = "DungeonQuestIcon.png"
+	else
+		icon = "ExplorationQuestIcon.png"
+	end
+
+	if DEBUG then QuestIconRegion:highlight(0.3) end
+	local list = regionFindAllNoFindException(QuestIconRegion, icon)
+
+	-- Show icons according to ascending y value
+	for i, v in ipairs(list) do
+		return true
+	end
+	return false
+end
+
 function TrustManager:looper()
 	if not DEBUG then self.initlaState = 2 end
 	ON_AUTO = false  -- this must be global
@@ -106,14 +126,6 @@ function TrustManager:looper()
 
 	--local ResultNext = Region(600, 2200, 240, 100)
 	local ResultItemNextLocation = Location(720, 2250)
-
-	if (QUEST == 1) then
-		QUEST_NAME= "TheTempleofEarthEntry.png"
-	elseif (QUEST == 2) then
-		QUEST_NAME= "TheTempleofEarthEnd.png"
-	else
-		QUEST_NAME= "TheTempleofEarthEntry.png"
-	end
 
 	local friendChoice1 = ""
 	local friendChoice2 = ""
@@ -125,7 +137,7 @@ function TrustManager:looper()
 		friendChoice1 = "02_No_friend.png"
 	end
 
-	switch = {
+	self.switch = {
 		["ChooseStage"] = function()
 			if existsClick("TheTempleofEarthMapIcon.png") then
 				return "ChooseLevel"
@@ -134,10 +146,14 @@ function TrustManager:looper()
 		end,
 		
 		["ChooseLevel"] = function()
-			if DEBUG then R24_0113:highlight(self.highlightTime) end
-			if (R24_0113:existsClick(QUEST_NAME)) then
+			if hasQuest(true, self.quest) then
+				click(QuestLocations[self.quest])
 				return "Challenge"
 			end
+--			if DEBUG then R24_0113:highlight(self.highlightTime) end
+--			if (R24_0113:existsClick(QUEST_NAME)) then
+--				return "Challenge"
+--			end
 			return "ChooseLevel"
 		end,
 		["Challenge"] = function(watchdog)
@@ -277,7 +293,7 @@ function TrustManager:looper()
 		if DEBUG then toast(self.state) end
 
 		-- run state machine
-		newState = switch[self.state](watchdog, self)
+		newState = self.switch[self.state](watchdog, self)
 		if newState ~= self.state then
 			self.state = newState
 			watchdog:touch()
@@ -323,7 +339,9 @@ function TrustManager.dogBarking(self, watchdog)
 		self.state = "ResultGil"
 	elseif ResultExp:exists("ResultExp.png") then
 		self.state = "ResultExp"
-	elseif R24_0113:exists(QUEST_NAME) then
+--	elseif R24_0113:exists(QUEST_NAME) then
+--		self.state = "ChooseLevel"
+	elseif hasQuest(true, self.quest) then
 		self.state = "ChooseLevel"
 	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
 		self.state = "ChooseFriend"
