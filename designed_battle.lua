@@ -109,18 +109,25 @@ function DesignedBattle:chooseOrders(data, round)
         addTextView("沒有打勾的兵員最後會被Auto觸發")newRow()
         -- addSpinnerIndex and addSpinner accept only global variable
         for i = 1, 6 do
-            addTextView("兵員"..i.." 順序")addSpinnerIndex("unitOrder"..i, UnitOrders, UnitOrders[3])
-            addCheckBox("unitIsEnemy"..i, "目標敵方? ", true)addTextView("目標")
-            addSpinnerIndex("unitTarget"..i, UnitTargets, 7)newRow()
+            offset = i + (round - 1) * 6
+            addTextView("兵員"..i.." 順序")
+            addSpinnerIndex("unitOrder"..offset, UnitOrders, UnitOrders[7])
+            addCheckBox("unitIsEnemy"..offset, "目標敵方? ", true)addTextView("目標")
+            addSpinnerIndex("unitTarget"..offset, UnitTargets, 7)newRow()
         end
     dialogShow("順序與目標 for Round "..round)
 
-    data.orders = { unitOrder1, unitOrder2, unitOrder3, unitOrder4, unitOrder5, unitOrder6 }
-    data.isEnemys = { unitIsEnemy1, unitIsEnemy2, unitIsEnemy3, unitIsEnemy4, unitIsEnemy5, unitIsEnemy6 }
-    data.targets = { unitTarget1, unitTarget2, unitTarget3, unitTarget4, unitTarget5, unitTarget6 }
-
-    -- clean used global variable
     for i = 1, 6 do
+        offset = i + (round - 1) * 6
+
+        -- fill tables.
+        local ord = loadstring("return unitOrder"..offset)
+        local ene = loadstring("return unitIsEnemy"..offset)
+        local tar = loadstring("return unitTarget"..offset)
+        data.orders[i] = ord()
+        data.isEnemys[i] = ene()
+        data.targets[i] = tar()
+
         _G["unitOrder"..i] = nil
         _G["unitIsEnemy"..i] = nil
         _G["unitTarget"..i] = nil
@@ -134,7 +141,7 @@ function DesignedBattle:chooseActions(data, round)
         addTextView("輸入技能與道具的'欄位'自左向右, 然後換行, 由1開始, 1是極限技")newRow()
         for i = 1, 6 do
         offset = i + (round - 1) * 6
-            addCheckBox("unitEnable"..i, "兵員"..i, true)
+            addCheckBox("unitEnable"..offset, "兵員"..i, true)
             addTextView("行動")addSpinnerIndex("unitAction"..offset, UnitActions, 1)
             addTextView("欄位")addEditNumber("unitIndex"..offset, 1)newRow()
         end
@@ -297,9 +304,19 @@ function DesignedBattle:loop()
     if (not self.init) then
         self:initialize()
     end
-
+    
     local rounds = self.rounds
     local data
+
+    --preset
+    for round = 1, rounds do
+        if self.roundAction == 1 then
+            data = self:obtain(self.repeatRound)
+        elseif self.roundAction == 2 then
+            data = self:obtain(round)
+        end
+    end
+    
     for round = 1, rounds do
         toast("round "..round)
         repeat until self:hasRepeatButton()
