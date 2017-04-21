@@ -55,6 +55,7 @@ function DesignedBattle.new()
     self.roundsData = {}
     self.roundAction = 1
     self.trigger = true
+    self.rounds = 1
 	return self
 end
 
@@ -259,7 +260,7 @@ function DesignedBattle:initialize()
         addTextView("如果無法一回合內清光敵人, 請增加回合數")newRow()newRow()
         
         addCheckBox("DB_NEED_INTERACTION", "回合互動式, 每回合問一次行動", false)newRow()newRow()
-        addTextView("總回合數: ")addSpinnerIndex("DB_TOTAL_ROUNDS", Rounds, self.rounds)newRow()
+        addTextView("總回合數: ")addSpinnerIndex("DB_TOTAL_ROUNDS", Rounds, 1)newRow()
         addTextView("自動重複第")addSpinnerIndex("DB_REPEAT_ROUNDS", Rounds, Rounds[13])newRow()
         addCheckBox("DB_TRIGGER", "設定完技能後是否觸發動作", true)newRow()
     dialogShow("Initialize")
