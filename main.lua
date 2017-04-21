@@ -41,6 +41,7 @@ else
 end
 DEBUG = true
 
+require("ankulua_wrapper")
 require("tools")
 require("screen_config")
 require("battle_scene")
@@ -48,6 +49,7 @@ require("designed_battle")
 require("watchdog")
 require("trust")
 require("explore")
+
 
 
 -- ========== Dialogs ================
@@ -65,6 +67,7 @@ BRIGHTNESS = false IMMERSIVE = true
 addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
 addCheckBox("IMMERSIVE", "Immersive", true)newRow()
 addCheckBox("DEBUG", "Debug mode", true)newRow()
+addCheckBox("PRO", "專業版請打勾", false)newRow()
 dialogShow("選擇自動化功能")
 
 setImmersiveMode(IMMERSIVE)
@@ -80,7 +83,7 @@ elseif FUNC == 2 then
     dialogShow("Auto Click Repeat")
 
     if BRIGHTNESS then
-        setBrightness(0)
+        proSetBrightness(0)
     end
 
     repeat

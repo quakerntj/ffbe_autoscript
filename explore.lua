@@ -57,7 +57,7 @@ function Explorer:init()
 
 	self.movePattern = MOVE_PATTERN
 	self.timeOutLimit = TIMEOUT_LIMIT
-	--setScanInterval(2)
+	--proSetScanInterval(2)
 	
 	
 	self.useAbility = BATTLE_ABILITY
@@ -68,7 +68,7 @@ function Explorer:init()
 	end
 
 	if BRIGHTNESS then
-		setBrightness(0)
+		proSetBrightness(0)
 	end
 end
 

@@ -29,11 +29,11 @@ function hasValue(table, value)
 end
 
 function vibratePattern()
-	vibrate(2)
+	proVibrate(2)
 	wait(1)
-	vibrate(2)
+	proVibrate(2)
 	wait(1)
-	vibrate(2)
+	proVibrate(2)
 end
 
 Point = {}

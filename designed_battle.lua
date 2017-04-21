@@ -228,7 +228,7 @@ function DesignedBattle:run(data)
 end
 
 function DesignedBattle:interaction(round)
-	vibrate(1)
+	proVibrate(1)
     dialogInit()
         addTextView("請等到所有隊員皆有行動力之後再按確認")newRow()
         addRadioGroup("DB_ROUND_ACTION", 1)
@@ -241,7 +241,7 @@ function DesignedBattle:interaction(round)
                 addRadioButton("結束互動式, 按照上一回合設定的行動", 10)
             end
         addCheckBox("DB_TRIGGER", "設定完技能後是否觸發動作", true)newRow()
-    	vibrate(1)
+    	proVibrate(1)
     dialogShow("回合"..round)
 
     self.roundAction = DB_ROUND_ACTION

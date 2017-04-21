@@ -79,7 +79,7 @@ function TrustManager:init()
 		addTextView("Highlight time")addEditNumber("HIGHLIGHT_TIME", 0.7)newRow()
 	end
 	dialogShow("Trust Master Maker".." - "..X.." × "..Y)
-	setScanInterval(SCAN_INTERVAL)
+	proSetScanInterval(SCAN_INTERVAL)
 	self.quest = QUEST
 	self.clearLimit = CLEAR_LIMIT
 	
@@ -90,7 +90,7 @@ function TrustManager:init()
     end
 	
 	if BRIGHTNESS then
-		setBrightness(0)
+		proSetBrightness(0)
 	end
 	
 	if DEBUG then
@@ -169,9 +169,9 @@ function TrustManager:looper()
 				BUY_LOOP = BUY_LOOP - 1
 			elseif (R34_1211:existsClick("Stamina_Back.png")) then
 				toast('體力不足，等待中...')
-				setScanInterval(10)
+				proSetScanInterval(10)
 				wait(30)
-				setScanInterval(SCAN_INTERVAL)
+				proSetScanInterval(SCAN_INTERVAL)
 				return "ChooseLevel"
 			end
 			return "Challenge"
@@ -225,12 +225,12 @@ function TrustManager:looper()
 		        elseif (not ON_AUTO and R28_0711:existsClick("04_Auto.png")) then
 					if DEBUG then R28_0711:highlight(self.highlightTime) end
 					ON_AUTO = true
-					setScanInterval(10)
+					proSetScanInterval(10)
 				end
 		    elseif (ON_AUTO and (not inBattle)) then
 				trust.battleRound = 0
 				ON_AUTO = false
-				setScanInterval(SCAN_INTERVAL)
+				proSetScanInterval(SCAN_INTERVAL)
 				return "ResultGil"
 			end
 			if (inBattle and (watchdog ~= nil)) then
