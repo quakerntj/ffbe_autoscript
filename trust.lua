@@ -34,8 +34,9 @@ function TrustManager.new()
 	self.debug = false
 	self.useAbility = false
 	self.battleRound = 0
+	self.friend = true
 
-	self.initlaState = 2  -- States index
+	self.initlaState = "ChooseLevel"
 	self.state = "ChooseLevel"
 	self.States = {
 		"ChooseStage",
@@ -66,22 +67,21 @@ function TrustManager:init()
 	addTextView("選擇關卡：")addSpinnerIndex("QUEST", QuestList, 6)newRow()
 	SCAN_INTERVAL = 2
 	addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
-	FRIEND = false
-	addCheckBox("FRIEND", "選擇朋友", false)newRow()
 	BUY = false
 	addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
 	BATTLE_ABILITY = false
 	addCheckBox("BATTLE_ABILITY", "戰鬥第一回合開始使用技能, 之後Repeat", false) newRow()
+	STATE = "ChooseLevel"
+	addTextView("Begin STATE")addSpinner("STATE", self.States, 2)newRow()
 	if DEBUG then
-		STATE = 2
 		HIGHLIGHT_TIME = 0.7
-		addTextView("Begin STATE")addEditNumber("STATE", 2)newRow()
 		addTextView("Highlight time")addEditNumber("HIGHLIGHT_TIME", 0.7)newRow()
 	end
 	dialogShow("Trust Master Maker".." - "..X.." × "..Y)
 	proSetScanInterval(SCAN_INTERVAL)
 	self.quest = QUEST
 	self.clearLimit = CLEAR_LIMIT
+	self.initlaState = STATE
 	
 	self.useAbility = BATTLE_ABILITY
     if self.useAbility then
@@ -95,7 +95,6 @@ function TrustManager:init()
 	
 	if DEBUG then
 		self.highlightTime = HIGHLIGHT_TIME
-		self.initlaState = STATE
 	end
 	
 	self.debug = DEBUG
@@ -120,7 +119,6 @@ function hasQuest(isDungeon, idx)
 end
 
 function TrustManager:looper()
-	if not DEBUG then self.initlaState = 2 end
 	ON_AUTO = false  -- this must be global
 	local watchdog = self.watchdog
 
@@ -129,13 +127,8 @@ function TrustManager:looper()
 
 	local friendChoice1 = ""
 	local friendChoice2 = ""
-	if (FRIEND) then
-		friendChoice1 = "02_Pick_up_friend.png"
-		friendChoice2 = "02_No_friend.png"
-	else
-		friendChoice2 = "02_Pick_up_friend.png"
-		friendChoice1 = "02_No_friend.png"
-	end
+	friendChoice1 = "02_Pick_up_friend.png"
+	friendChoice2 = "02_No_friend.png"
 
 	self.switch = {
 		["ChooseStage"] = function()
@@ -179,8 +172,10 @@ function TrustManager:looper()
 		["ChooseFriend"] = function()
 			if DEBUG then R34_1111:highlight(self.highlightTime) end
 			if (R34_1111:existsClick(friendChoice1)) then
+			 self.friend = true
 				return "Go"
 			elseif (R34_1111:existsClick(friendChoice2)) then
+			 self.friend = false
 				return "Go"
 			end
 			return "ChooseFriend"
@@ -271,7 +266,7 @@ function TrustManager:looper()
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if R34_1311:existsClick("Result_Next.png", 4) then
 			--if (click(ResultItemNextLocation)) then
-				if (FRIEND) then
+				if (self.friend) then
 					-- Not to add new friend
 					if DEBUG then R25_0311:highlight(self.highlightTime) end
 					R25_0311:existsClick("NotApplyNewFriend.png", 5)
@@ -289,7 +284,8 @@ function TrustManager:looper()
 	local pause = false
 	
 	self.loopCount = 0
-	self.state = self.States[self.initlaState]
+	self.state = self.initlaState
+	watchdog:touch() --prevent dialog took too long
 
 	while self.loopCount < self.clearLimit do
 
