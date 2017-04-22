@@ -48,7 +48,8 @@ Y14 = Y / 4
 Y34 = Y * 3 / 4
 Y13 = Y / 3
 Y23 = Y * 2 / 3
-
+Y15 = Y / 5
+Y35 = Y * 3 / 5
 Y18 = Y / 8.0
 Y38 = Y * 3 / 8
 Y58 = Y * 5 / 8
@@ -85,6 +86,7 @@ R24_1211 = Region(X12, Y12, X12, Y14)
 R24_0113 = Region(0, Y14, X12, Y34)
 R58_2611 = Region(X25, Y34, X15, Y18)
 R18_0711 = Region(0, Y78, X, Y18)
+R25_0311 = Region(0, Y35, X12, Y15)
 
 -- Direction for moving
 

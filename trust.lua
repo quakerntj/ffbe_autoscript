@@ -214,7 +214,8 @@ function TrustManager:looper()
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			local inBattle = (BattleIndicator:exists("Battle.png") ~= nil)
 			if inBattle then
-				if trust.useAbility and trust.db:hasRepeatButton() then
+				if trust.useAbility then
+				    if trust.db:hasRepeatButton() then
 					ON_AUTO = true  -- means not need click auto button
     	    		trust.battleRound = trust.battleRound + 1
         		    if trust.battleRound > 1 then
@@ -222,6 +223,7 @@ function TrustManager:looper()
                 	else    			   
         	        	trust.db:run(trust.data)
   	    	  	    end
+  	    	  	 end
 		        elseif (not ON_AUTO and R28_0711:existsClick("04_Auto.png")) then
 					if DEBUG then R28_0711:highlight(self.highlightTime) end
 					ON_AUTO = true
@@ -271,7 +273,8 @@ function TrustManager:looper()
 			--if (click(ResultItemNextLocation)) then
 				if (FRIEND) then
 					-- Not to add new friend
-					existsClick("08_No_Friend1.png", 5)
+					if DEBUG then R25_0311:highlight(self.highlightTime) end
+					R25_0311:existsClick("NotApplyNewFriend.png", 5)
 				end
 				return "Clear"
 			end
