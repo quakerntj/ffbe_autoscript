@@ -57,7 +57,7 @@ function TrustManager.new()
 end
 
 function TrustManager:init()
-    local QuestList = { "1", "2", "3", "4", "5", "土廟" }
+    local QuestList = { "1", "2", "3", "4", "5" }
     QUEST = 1
 	dialogInit()
 	CLEAR_LIMIT = 999
