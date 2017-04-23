@@ -35,6 +35,7 @@ function TrustManager.new()
 	self.useAbility = false
 	self.battleRound = 0
 	self.friend = true
+	self.giveup = false
 
 	self.initlaState = "ChooseLevel"
 	self.state = "ChooseLevel"
