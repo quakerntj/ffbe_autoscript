@@ -207,29 +207,49 @@ function TrustManager:looper()
 		
 		["Battle"] = function(watchdog, trust)
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
-			local inBattle = (BattleIndicator:exists("Battle.png") ~= nil)
+			local inBattle = BattleIndicator:exists("Battle.png")
+			
 			if inBattle then
 				if trust.useAbility then
 				    if trust.db:hasRepeatButton() then
-					ON_AUTO = true  -- means not need click auto button
-    	    		trust.battleRound = trust.battleRound + 1
-        		    if trust.battleRound > 1 then
-                        trust.db:triggerRepeat()
-                	else    			   
-        	        	trust.db:run(trust.data)
-  	    	  	    end
-  	    	  	 end
+						ON_AUTO = true  -- means not need click auto button
+	    	    		trust.battleRound = trust.battleRound + 1
+	        		    if trust.battleRound > 1 then
+    	                    trust.db:triggerRepeat()
+        	        	else    			   
+        		        	trust.db:run(trust.data)
+  	    	  		    end
+					end
 		        elseif (not ON_AUTO and R28_0711:existsClick("04_Auto.png")) then
 					if DEBUG then R28_0711:highlight(self.highlightTime) end
 					ON_AUTO = true
 					proSetScanInterval(10)
+				else
+					local r,g,b = getColor(inBattle)
+					if (r + g + b) < 300 then -- normal should be 600+
+		    			if R38_1111:exists("RaiseAllDialog.png") then
+		    				R25_0211:click("NotToRaiseAll.png")
+			    			R38_1211:exists("GiveUpDialog.png")
+			    			R25_1211:click("YesToGiveUp.png")
+							trust.battleRound = 0
+							ON_AUTO = false
+							self.giveup = true
+							proSetScanInterval(SCAN_INTERVAL)
+							return "ResultGil"
+						end
+					end
 				end
 		    elseif (ON_AUTO and (not inBattle)) then
 				trust.battleRound = 0
 				ON_AUTO = false
 				proSetScanInterval(SCAN_INTERVAL)
 				return "ResultGil"
-			end
+			elseif R48_3611:exists("BattleReturn.png") then
+	    		toast("Pausing")
+	    		wait(7)
+				proVibrate(1.5)
+				watchdog:touch()
+		    end
 			if (inBattle and (watchdog ~= nil)) then
 				watchdog:touch()
 			end
@@ -242,6 +262,10 @@ function TrustManager:looper()
 			ResultGil:existsClick("ResultGil.png")
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if R34_1311:existsClick("06_Next1.png") then
+				if self.giveup then
+					self.giveup = false
+					return "ChooseLevel"
+				end
 				return "ResultExp"
 			end
 			return "ResultGil"

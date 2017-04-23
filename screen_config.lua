@@ -49,7 +49,9 @@ Y34 = Y * 3 / 4
 Y13 = Y / 3
 Y23 = Y * 2 / 3
 Y15 = Y / 5
+Y25 = Y * 2 / 5
 Y35 = Y * 3 / 5
+Y45 = Y * 4 / 5
 Y18 = Y / 8.0
 Y38 = Y * 3 / 8
 Y58 = Y * 5 / 8
@@ -77,16 +79,21 @@ R33_1111 = Region(X13, Y13, X13, Y13)
 R14_0111 = Region(0, Y14, X, Y12)
 R23_0111 = Region(0, Y13, X12, Y13)
 R23_1111 = Region(X12, Y13, X12, Y13)
+R25_0211 = Region(0, Y25, X12, Y15)
+R25_1211 = Region(X12, Y25, X12, Y15)
 R34_0011 = Region(0, 0, X13, Y14)
 R34_1111 = Region(X13, Y14, X13, Y14)
 R34_1211 = Region(X13, Y12, X13, Y14)
 R34_1311 = Region(X13, Y34, X13, Y14)
+R38_1111 = Region(X13, Y18, X13, Y18)
+R38_1211 = Region(X13, Y28, X13, Y18)
 R28_0711 = Region(0, Y78, X12, Y18)
 R24_1211 = Region(X12, Y12, X12, Y14)
 R24_0113 = Region(0, Y14, X12, Y34)
 R58_2611 = Region(X25, Y34, X15, Y18)
 R18_0711 = Region(0, Y78, X, Y18)
 R25_0311 = Region(0, Y35, X12, Y15)
+R48_3611 = Region(X34, Y68, X14, Y18)
 
 -- Direction for moving
 
