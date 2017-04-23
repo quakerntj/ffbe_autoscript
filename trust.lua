@@ -240,10 +240,17 @@ function TrustManager:looper()
 					end
 				end
 		    elseif (ON_AUTO and (not inBattle)) then
-				trust.battleRound = 0
-				ON_AUTO = false
-				proSetScanInterval(SCAN_INTERVAL)
-				return "ResultGil"
+		    	if R48_3611:exists("BattleReturn.png") then
+	 		   		toast("Pausing")
+	 		   		wait(7)
+					proVibrate(1.5)
+					watchdog:touch()
+			    else
+					trust.battleRound = 0
+					ON_AUTO = false
+					proSetScanInterval(SCAN_INTERVAL)
+					return "ResultGil"
+				end
 			elseif R48_3611:exists("BattleReturn.png") then
 	    		toast("Pausing")
 	    		wait(7)
