@@ -142,10 +142,8 @@ function TrustManager:looper()
 	--local ResultNext = Region(600, 2200, 240, 100)
 	local ResultItemNextLocation = Location(720, 2250)
 
-	local friendChoice1 = ""
-	local friendChoice2 = ""
-	friendChoice1 = "02_Pick_up_friend.png"
-	friendChoice2 = "02_No_friend.png"
+	local friendChoice1 = "PickupFriend.png"
+	local friendChoice2 = "NoFriend.png"
 
 	self.switch = {
 		["ChooseStage"] = function()
@@ -168,7 +166,7 @@ function TrustManager:looper()
 		end,
 		["Challenge"] = function(watchdog)
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
-			if (R34_1311:existsClick("06_Next.png")) then
+			if (R34_1311:existsClick("Next.png")) then
 				wait(0.8)
 				return "ChooseFriend"
 			elseif (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
@@ -199,7 +197,7 @@ function TrustManager:looper()
 		end,
 		["Go"] = function()
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
-			if (R34_1311:existsClick("03_Go.png")) then
+			if (R34_1311:existsClick("Go.png")) then
 				return "IsInBattle"
 			end
 			return "Go"
@@ -313,7 +311,7 @@ function TrustManager:looper()
 			if DEBUG then ResultGil:highlight(self.highlightTime) end
 			ResultGil:existsClick("ResultGil.png")
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
-			if R34_1311:existsClick("06_Next1.png") then
+			if R34_1311:existsClick("Next1.png") then
 				if self.giveup then
 					self.giveup = false
 					return "ChooseLevel"
@@ -394,8 +392,8 @@ function TrustManager:looper()
 end
 
 function TrustManager.dogBarking(self, watchdog)
-	local friendChoice1 = "02_Pick_up_friend.png"
-	local friendChoice2 = "02_No_friend.png"
+	local friendChoice1 = "PickupFriend.png"
+	local friendChoice2 = "NoFriend.png"
 
 	if DEBUG then toast("Watchdog barking") end
 	if (R13_0111:exists("Communication_Error.png")) then
@@ -406,7 +404,7 @@ function TrustManager.dogBarking(self, watchdog)
 		self.state = "ChooseStage"
 	elseif R33_1111:existsClick("OK.png") then
 		print("try click an OK")
-	elseif R34_1311:exists("03_Go.png") then
+	elseif R34_1311:exists("Go.png") then
 		self.state = "Go"
 	elseif BattleIndicator:exists("Battle.png") then
 		self.state = "Battle"
@@ -420,9 +418,9 @@ function TrustManager.dogBarking(self, watchdog)
 		self.state = "ChooseLevel"
 	elseif (R34_1111:exists(friendChoice1)) or (R34_1111:exists(friendChoice2)) then
 		self.state = "ChooseFriend"
-	elseif R34_1311:existsClick("06_Next1.png") then -- if has next, click it.
+	elseif R34_1311:existsClick("Next1.png") then -- if has next, click it.
 		print("try click a next")
-	elseif R34_1311:existsClick("06_Next.png") then -- if has next, click it.
+	elseif R34_1311:existsClick("Next.png") then -- if has next, click it.
 		print("try click a next")
 	elseif R34_1311:existsClick("Result_Next.png") then -- if has next, click it.
 		print("try click a next")
