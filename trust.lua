@@ -36,6 +36,8 @@ function TrustManager.new()
 	self.battleRound = 0
 	self.friend = true
 	self.giveup = false
+	self.autoPressed = false
+	self.paused = false
 
 	self.initlaState = "ChooseLevel"
 	self.state = "ChooseLevel"
@@ -59,8 +61,8 @@ function TrustManager.new()
 end
 
 function TrustManager:init()
-    local QuestList = { "1", "2", "3", "4", "5" }
-    QUEST = 1
+	local QuestList = { "1", "2", "3", "4", "5" }
+	QUEST = 1
 	dialogInit()
 	CLEAR_LIMIT = 999
 	addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
@@ -83,21 +85,21 @@ function TrustManager:init()
 	self.quest = QUEST
 	self.clearLimit = CLEAR_LIMIT
 	self.initlaState = STATE
-	
+
 	self.useAbility = BATTLE_ABILITY
-    if self.useAbility then
-    	self.db = DesignedBattle()
-	    self.data = self.db:obtain(1)  -- a dialog to set ability when first time obtain.
-    end
-	
+	if self.useAbility then
+		self.db = DesignedBattle()
+		self.data = self.db:obtain(1)  -- a dialog to set ability when first time obtain.
+	end
+
 	if BRIGHTNESS then
 		proSetBrightness(0)
 	end
-	
+
 	if DEBUG then
 		self.highlightTime = HIGHLIGHT_TIME
 	end
-	
+
 	self.debug = DEBUG
 end
 
@@ -119,8 +121,22 @@ function hasQuest(isDungeon, idx)
 	return false
 end
 
+function isGameOver(inBattle)
+	-- Handle Game Over Dialog
+	if not inBattle then return false end
+	local r,g,b = getColor(inBattle)  -- getColor has good performance.
+	if (r + g + b) < 300 then -- normal should be 600+
+		if R38_1111:exists("RaiseAllDialog.png") then
+			R25_0211:click("NotToRaiseAll.png")
+			R38_1211:exists("GiveUpDialog.png")
+			R25_1211:click("YesToGiveUp.png")
+			return true
+		end
+	end
+	return false
+end
+
 function TrustManager:looper()
-	ON_AUTO = false  -- this must be global
 	local watchdog = self.watchdog
 
 	--local ResultNext = Region(600, 2200, 240, 100)
@@ -138,7 +154,7 @@ function TrustManager:looper()
 			end
 			return "ChooseStage"
 		end,
-		
+
 		["ChooseLevel"] = function()
 			if hasQuest(true, self.quest) then
 				click(QuestLocations[self.quest])
@@ -193,7 +209,7 @@ function TrustManager:looper()
 			-- Make sure we are in battle.
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			if BattleIndicator:exists("Battle.png") then
-				ON_AUTO = false
+				self.autoPressed = false
 				return "Battle"
 			end
 			if DEBUG then FriendChange:highlight(self.highlightTime) end
@@ -205,59 +221,87 @@ function TrustManager:looper()
 			end
 			return "IsInBattle"
 		end,
-		
+
 		["Battle"] = function(watchdog, trust)
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
+			if self.paused then
+				local battleReturn = R48_3611:exists("BattleReturn.png")
+				if battleReturn then
+ 		   			click(battleReturn)
+					self.paused = false
+	 		   		watchdog:enable(true)
+ 		   			toast("resume")
+	   			else
+			   		wait(15)
+					proVibrate(1)
+					toast("Still paused.  Go to menu to continue.")
+					return "Battle"
+				end
+			end
+
 			local inBattle = BattleIndicator:exists("Battle.png")
-			
+
+			-- handle GameOver
+			if isGameOver(inBattle) then
+				trust.battleRound = 0
+				self.autoPressed = false
+				self.giveup = true
+				return "ResultGil"
+			end
+
 			if inBattle then
 				if trust.useAbility then
-				    if trust.db:hasRepeatButton() then
-						ON_AUTO = true  -- means not need click auto button
-	    	    		trust.battleRound = trust.battleRound + 1
-	        		    if trust.battleRound > 1 then
-    	                    trust.db:triggerRepeat()
-        	        	else    			   
-        		        	trust.db:run(trust.data)
-  	    	  		    end
+					if trust.db:hasRepeatButton() then
+						trust.battleRound = trust.battleRound + 1
+						if trust.battleRound > 1 then
+							trust.db:triggerRepeat()
+						else
+							trust.db:run(trust.data)
+						end
 					end
-		        elseif (not ON_AUTO and R28_0711:existsClick("04_Auto.png")) then
-					if DEBUG then R28_0711:highlight(self.highlightTime) end
-					ON_AUTO = true
-					proSetScanInterval(10)
-				else
-					local r,g,b = getColor(inBattle)
-					if (r + g + b) < 300 then -- normal should be 600+
-		    			if R38_1111:exists("RaiseAllDialog.png") then
-		    				R25_0211:click("NotToRaiseAll.png")
-			    			R38_1211:exists("GiveUpDialog.png")
-			    			R25_1211:click("YesToGiveUp.png")
-							trust.battleRound = 0
-							ON_AUTO = false
-							self.giveup = true
-							proSetScanInterval(SCAN_INTERVAL)
-							return "ResultGil"
+				else -- not use ability
+					if not self.autoPressed then
+						if R28_0711:existsClick("Auto.png") then
+							self.autoMatch = R28_0711:getLastMatch()
+							if DEBUG then R28_0711:highlight(self.highlightTime) end
+							self.autoPressed = true
+						else
+							-- weird ...
+							toast("Can't find Auto button. Maybe pressed.")
+						end
+					else  -- auto is pressed
+						if self.autoMatch then
+							r,g,b = getColor(self.autoMatch)
+							if (r+g+b) < 150 then
+								self.autoPressed = false
+							end
 						end
 					end
 				end
-		    elseif (ON_AUTO and (not inBattle)) then
-		    	if R48_3611:exists("BattleReturn.png") then
-	 		   		toast("Pausing")
-	 		   		wait(7)
-					proVibrate(1.5)
-					watchdog:touch()
-			    else
+			else  -- not in battle
+				local battleReturn = R48_3611:exists("BattleReturn.png")
+				if battleReturn then
+					if self.paused then
+	 		   			click(battleReturn)
+						self.paused = false
+		 		   		watchdog:enable(true)
+	 		   			toast("resume")
+ 		   			else
+	 		   			toast("Paused.  Continue if keep stay in this menu page.")
+						self.paused = true
+						proVibrate(1)
+		 		   		watchdog:enable(false)
+		 		   		wait(5)
+ 		   			end
+				else
+					-- Battle finished
 					trust.battleRound = 0
-					ON_AUTO = false
-					proSetScanInterval(SCAN_INTERVAL)
+					self.autoPressed = false
+					self.giveup = false
 					return "ResultGil"
 				end
-			elseif R48_3611:exists("BattleReturn.png") then
-	    		toast("Pausing")
-	    		wait(7)
-				proVibrate(1.5)
-				watchdog:touch()
-		    end
+			end
+
 			if (inBattle and (watchdog ~= nil)) then
 				watchdog:touch()
 			end
@@ -278,7 +322,7 @@ function TrustManager:looper()
 			end
 			return "ResultGil"
 		end,
-		
+
 		["ResultExp"] = function()
 			-- may have level up and trust up at the same time. click twice.
 			if DEBUG then ResultExp:highlight(self.highlightTime) end
@@ -314,7 +358,7 @@ function TrustManager:looper()
 	self.totalTimer:set()
 	questTimer:set()
 	local pause = false
-	
+
 	self.loopCount = 0
 	self.state = self.initlaState
 	watchdog:touch() --prevent dialog took too long
@@ -330,7 +374,7 @@ function TrustManager:looper()
 			watchdog:touch()
 		end
 		watchdog:awake()
-		
+
 		if (self.state == "Clear") then
 			self.state = "ChooseLevel"
 			self.loopCount = self.loopCount + 1
@@ -339,7 +383,7 @@ function TrustManager:looper()
 			setStopMessage(msg)
 			questTimer:set()
 			self.errorCount = 0
-			
+
 			-- The debug mode may be opened due to error.  Close it when the error pass.
 			if not self.debug then
 				DEBUG = false

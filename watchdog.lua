@@ -42,6 +42,7 @@ end
 
 function WatchDog:enable(b)
     self.en = b
+    self:touch()
 end
 
 function WatchDog:awake()

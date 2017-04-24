@@ -68,11 +68,11 @@ function DesignedBattle:triggerReturn()
 end
 
 function DesignedBattle:clickAuto()
-    return R28_0711:existsClick("04_Auto.png") ~= nil
+    return R28_0711:existsClick("Auto.png") ~= nil
 end
 
 function DesignedBattle:triggerAuto()
-    if R28_0711:exists("04_Auto.png") then
+    if R28_0711:exists("Auto.png") then
         match = R28_0711:getLastMatch()
         R28_0711:click(match)
         wait(1)
