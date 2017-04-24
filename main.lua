@@ -57,10 +57,11 @@ require("explore")
 dialogInit()
 FUNC=1
 addRadioGroup("FUNC", 1)
-    addRadioButton("Quest Farming", 1)
-    addRadioButton("Auto Click REPEAT", 2)
-    addRadioButton("Explorer", 3)
-    addRadioButton("Designed Battle", 4)
+    addRadioButton("Quest Farming 刷關卡", 1)
+    addRadioButton("Auto Click REPEAT 自動點Repeat", 2)
+    addRadioButton("Explorer 自動探索", 3)
+    addRadioButton("Designed Battle 施放記憶技能戰鬥", 4)
+    addRadioButton("Arena 鬥技場 施放記憶技能戰鬥", 6)
     addRadioButton("test", 5)
     newRow()
 BRIGHTNESS = false IMMERSIVE = true
@@ -101,6 +102,13 @@ elseif FUNC == 4 then
     db = DesignedBattle(2)
     db:loop()
     scriptExit("Repeat finish")
+elseif FUNC == 6 then
+	local db = DesignedBattle()
+	db.trigger = false
+	local data = db:obtain(30)
+	db:run(data)
+	proVibrate(1)
+    scriptExit("Ready")
 elseif FUNC == 5 then
 -- TODO find out the trust percentage.  OCR didn't work for Android N...
 --    for i, rect in ipairs(TrustPercentageRects) do

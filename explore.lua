@@ -81,30 +81,17 @@ function Explorer:run()
 	local isAutoActivate = false
 	repeat
 		-- TODO If enter door
-
-		if math.random(1,20) > 13 then
-			isTouchDown = false
-			-- force touch down randomly
-			touchUp(DTABLE[5], 0.2)
-			wait(0.1)
-			touchDown(DTABLE[5], 0.2)
-		end
-
 		if (BattleIndicator:exists("Battle.png")) then
 			toast("In Battle")
-			if isTouchDown then
-				touchUp(DTABLE[5], 0.2)
-				isTouchDown = false
-			end
-			if not self.useAbility and self.db:hasRepeatButton() then
-				isAutoActivate = self.db:clickAuto()
+			if not self.useAbility and DesignedBattle.hasRepeatButton() then
+				isAutoActivate = DesignedBattle.clickAuto()
 			end
 
 			local battleRound = 0
 			repeat
 				if DEBUG then BattleIndicator:highlight(0.2) end
 				if BattleIndicator:exists("Battle.png") then
-					if self.useAbility and self.db:hasRepeatButton() then
+					if self.useAbility and DesignedBattle.hasRepeatButton() then
 						battleRound = battleRound + 1
 						if battleRound > 1 then
 							if self.autoOrRepeat == 1 then
@@ -144,21 +131,12 @@ function Explorer:run()
 			end
 		end
 
-		-- check if the center has highlight
-		local r, g, b = getColor(DTABLE[5])
-		if not isTouchDown or (r+g+b) < 600 then
-			touchDown(DTABLE[5], 0.2)
-			isTouchDown = true
-		end
-
 		self:move(self.movePattern)
 		FINISH = false
 	until FINISH
 	vibratePattern()
 	scriptExit("Auto exploration finish")
 end
-
-
 
 function Explorer:move(pattern)
 	math.randomseed(os.time())
@@ -202,11 +180,19 @@ function Explorer:move(pattern)
 		directions = invDirs
 	end
 	
-	for i, v in ipairs(directions) do
-		-- The fist move can't be 5.  So i skip first move.
-		if i ~= 1 then
-			touchMove(DTABLE[v], 0.3)
-		end
+	local touchList = {}
+	local touchIdx = 1
+    touchList[touchIdx] = {action = "touchDown", target = DTABLE[directions[1]]}
+    touchIdx = touchIdx + 1
+    touchList[touchIdx] = {action = "wait", target = 0.2}
+    touchIdx = touchIdx + 1
+	for i = 2, 11 do
+		touchList[touchIdx] = {action = "touchMove", target = DTABLE[directions[i]]}
+	    touchIdx = touchIdx + 1
+		touchList[touchIdx] = {action = "wait", target = 0.4}
+	    touchIdx = touchIdx + 1
 	end
+    touchList[touchIdx] = {action = "touchUp", target = DTABLE[directions[12]]}
+    manualTouch(touchList)
 end
 

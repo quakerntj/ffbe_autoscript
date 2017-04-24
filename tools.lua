@@ -151,3 +151,45 @@ function Rect:move(x, y)
     self.region = Region(self.x, self.y, self.w, self.h)
 end
 
+-- Only copy top level, the value still pointer to the same item.
+function shallowcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+function iconcat(dest, offset, count, src)
+    local c = 0
+    local o = offset
+    for k, v in ipairs(src) do
+        dest[offset] = v
+        o = o + 1
+        c = c + 1
+        if c > count then
+            return
+        end
+    end
+end

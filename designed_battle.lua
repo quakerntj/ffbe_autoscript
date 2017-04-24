@@ -67,7 +67,7 @@ function DesignedBattle:triggerReturn()
     BattleReturn:existsClick("Battle_return.png")
 end
 
-function DesignedBattle:clickAuto()
+function DesignedBattle.clickAuto()
     return R28_0711:existsClick("Auto.png") ~= nil
 end
 
@@ -80,7 +80,7 @@ function DesignedBattle:triggerAuto()
     end
 end
 
-function DesignedBattle:hasRepeatButton()
+function DesignedBattle.hasRepeatButton()
     local m = R28_0711:exists("Repeat.png")
     if m ~= nil then
         local r, g, b = getColor(m)
@@ -319,7 +319,7 @@ function DesignedBattle:loop()
     
     for round = 1, rounds do
         toast("round "..round)
-        repeat until self:hasRepeatButton()
+        repeat until DesignedBattle.hasRepeatButton()
 
         if self.needInteraction then
             self:interaction(round)
