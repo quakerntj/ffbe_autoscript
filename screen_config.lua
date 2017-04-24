@@ -142,3 +142,7 @@ for i = 1,5 do
     local step = TrustPercentageRectStep * (i - 1)  -- Oops, Lua can't count i from 0.
     TrustPercentageRects[i] = Rect(1160, 400 + step, true, 165, 56)
 end
+
+ExplorationExitDialog = Region(190, 220, 250, 80)
+ExplorationNotToExit = Region(1060, 925, 72, 72)
+
