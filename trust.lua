@@ -36,6 +36,8 @@ function TrustManager.new()
 	self.battleRound = 0
 	self.friend = true
 	self.giveup = false
+	self.giveupCount = 0
+	self.giveupCountLimit = 3
 	self.autoPressed = false
 	self.paused = false
 
@@ -89,7 +91,7 @@ function TrustManager:init()
 	self.useAbility = BATTLE_ABILITY
 	if self.useAbility then
 		self.db = DesignedBattle()
-		self.data = self.db:obtain(1)  -- a dialog to set ability when first time obtain.
+		self.data = self.db:obtain(20)  -- a dialog to set ability when first time obtain.
 	end
 
 	if BRIGHTNESS then
@@ -244,6 +246,11 @@ function TrustManager:looper()
 				trust.battleRound = 0
 				self.autoPressed = false
 				self.giveup = true
+				self.giveupCount = self.giveupCount + 1
+				print("GameOver " .. self.giveupCount .. " times.")
+				if self.giveupCount == self.giveupCountLimit then
+				    scriptExit("GameOver too many times")
+				end
 				return "ResultGil"
 			end
 
