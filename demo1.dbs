@@ -1,0 +1,12 @@
+" This is a demo of Designed Battle Script
+"s  'start the round.  using s to wait a round begin.
+    u5a2i5 'this magic will target to all allie' t1 'let t1 be the represent.
+    u4a2i5 'has target to allie unit1' t1
+    u3a2i8 'WBlackMagic' i9 'Lighten' i8 'Fire'
+    l2 d100 l1
+    lr
+    q  ' Quit ankulua script for debug...
+    'Luanch all by auto to force all unit has an action.
+    'And force the repeat button gray out.
+    la
+e

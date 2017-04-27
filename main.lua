@@ -17,6 +17,7 @@
 --]]
 
 if Location == nil then
+    -- a wrapper to runing ankulua script in only lua env.
     require("ankulua.lua")
 end
 
@@ -44,33 +45,66 @@ DEBUG = true
 require("ankulua_wrapper")
 require("tools")
 require("screen_config")
+require("action_parser")
 require("battle_scene")
 require("designed_battle")
 require("watchdog")
 require("trust")
 require("explore")
 
-
-
 -- ========== Dialogs ================
+MemoryListMajor = {
+    "隊伍1",  -- Team 1
+    "隊伍2",
+    "隊伍3",
+    "隊伍4",
+    "隊伍5",
+    "鬥技場1",  -- Arena 1
+    "鬥技場2",
+    "鬥技場3",
+    "鬥技場4",
+}
+
+MemoryListMinor = {
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+}
+
+DialogOptions = {
+    "完成", -- complete and submit
+    "暫離10秒", -- pause and leave dialog for 10 seconds
+    "上一頁", -- previous page
+}
 
 dialogInit()
 FUNC=1
 addRadioGroup("FUNC", 1)
-    addRadioButton("Quest Farming 刷關卡", 1)
-    addRadioButton("Auto Click REPEAT 自動點Repeat", 2)
-    addRadioButton("Explorer 自動探索", 3)
-    addRadioButton("Designed Battle 施放記憶技能戰鬥", 4)
-    addRadioButton("Arena 鬥技場 施放記憶技能戰鬥", 6)
+    addRadioButton("Quest Farming 刷關卡", 1) -- Auto quest farm.  Can cast designed abilities.
+    --addRadioButton("Auto Click REPEAT 自動點Repeat", 2) -- Auto click repeat
+    addRadioButton("Explorer 自動探索", 3) -- Auto exploration and battle
+    addRadioButton("Designed Battle 施放記憶技能戰鬥", 4) -- cast designed abilities to battle
+    addRadioButton("Arena 鬥技場 施放記憶技能戰鬥", 6) -- cast designed abilitise to battle
     addRadioButton("test", 5)
     newRow()
 BRIGHTNESS = false IMMERSIVE = true
-addCheckBox("BRIGHTNESS", "螢幕亮度最低", true)newRow()
-addCheckBox("IMMERSIVE", "Immersive", true)newRow()
-addCheckBox("DEBUG", "Debug mode", true)newRow()
-addCheckBox("PRO", "專業版請打勾", false)newRow()
+MEMORY_MAJOR = 1
+MEMORY_MINOR = 1
+DIALOG_OPTION = 1
+addTextView("技能記憶卡")addSpinnerIndex("MEMORY_MAJOR", MemoryListMajor, 1)addSpinnerIndex("MEMORY_MINOR", MemoryListMinor, 1)newRow() -- Ability memory card
+addCheckBox("BRIGHTNESS", "螢幕亮度最低 ", true)addCheckBox("IMMERSIVE", "Immersive", true)newRow() -- brightness low
+addCheckBox("DEBUG", "Debug ", true)addCheckBox("PRO", "專業版", false)newRow() -- for PRO version
+addTextView("對話框功能")addSpinnerIndex("DIALOG_OPTION", DialogOptions, 1)
 dialogShow("選擇自動化功能")
-
 setImmersiveMode(IMMERSIVE)
 
 if FUNC == 1 then
@@ -103,6 +137,7 @@ elseif FUNC == 4 then
     db:loop()
     scriptExit("Repeat finish")
 elseif FUNC == 6 then
+    -- Arena
 	local db = DesignedBattle()
 	db.trigger = false
 	local data = db:obtain(30)
@@ -110,6 +145,13 @@ elseif FUNC == 6 then
 	proVibrate(1)
     scriptExit("Ready")
 elseif FUNC == 5 then
+    -- Code
+    db = DesignedBattle(2)
+    local f = io.open(WORK_DIR.."demo1.dbs", "r")
+    decode(db.interpreter, f:read("*all"))
+    f:close()
+
+--elseif FUNC == 5 then
 -- TODO find out the trust percentage.  OCR didn't work for Android N...
 --    for i, rect in ipairs(TrustPercentageRects) do
 --        rect.region:highlight(1)

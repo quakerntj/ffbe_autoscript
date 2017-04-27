@@ -22,53 +22,152 @@ BattleData = {}
 BattleData.__index = BattleData
 
 setmetatable(BattleData, {
-	__call = function (cls, ...)
-		return cls.new(...)
-	end,
+    __call = function (cls, ...)
+        return cls.new(...)
+    end,
 })
 
 function BattleData.new()
-	local self = setmetatable({}, BattleData)
-	self.init = false
+    local self = setmetatable({}, BattleData)
+    self.init = false
     self.enables = {}
     self.actions = {}
     self.indices = {}
     self.orders = {}
     self.isEnemys = {}
     self.targets = {}
-	return self
+    return self
 end
 
 DesignedBattle = {}
 DesignedBattle.__index = DesignedBattle
 
 setmetatable(DesignedBattle, {
-	__call = function (cls, ...)
-		return cls.new(...)
-	end,
+    __call = function (cls, ...)
+        return cls.new(...)
+    end,
 })
 
 function DesignedBattle.new()
-	local self = setmetatable({}, DesignedBattle)
-	self.init = false
+    local self = setmetatable({}, DesignedBattle)
+    self.init = false
     self.scene = BattleScene()
     self.roundsData = {}
     self.roundAction = 1
     self.trigger = true
     self.rounds = 1
-	return self
+    self:initInterpreter()
+    return self
+end
+
+function DesignedBattle:initInterpreter()
+    local waitAction = 0.2
+    local waitChooseItem = 0.3
+    local waitChooseTarget = 0.3
+    local startTime = Timer()
+    
+    local units = self.scene.units
+    local page = self.scene.page
+    local cunit = false  -- current unit
+    local caction = false  -- current action
+
+    self.interpreter = {
+        ["u"] = function(num)
+            if not num then return true end -- expect a number
+            print("unit" .. num)
+            cunit = units[tonumber(num)]
+            return false
+        end,
+        ["a"] = function(num)
+            if not num then return true end -- expect a number
+            print("action" .. num)
+            if not cunit then return false end
+            local act = tonumber(num)
+            if act == 1 then
+                cunit:attack()
+                wait(waitAction)
+            elseif act == 2 then
+                cunit:abilityPage()
+                wait(waitAction)
+            elseif act == 3 then
+                cunit:itemPage()
+            elseif act == 4 then
+                cunit:defence()
+                wait(waitAction)
+            end
+            return false
+        end,
+        ["i"] = function(num)
+            if not num then return true end -- expect a number
+            print("index" .. num)
+            page:choose(tonumber(num))
+            return false
+        end,
+        ["t"] = function(num)
+            if not num then return true end -- expect a number
+--            if not self:hasReturn() then
+--                scriptExit("Error when select target unit "..num)
+--            end
+            print("target" .. num)
+            units[tonumber(num)]:submit()
+            return false
+        end,
+        ["l"] = function(arg)
+            if not arg then return true end -- expect a argument
+            print("launch" .. arg)
+            if arg == "r" then
+                DesignedBattle.clickRepeat()
+            elseif arg == "a" then
+                DesignedBattle.clickAuto()
+            else
+                units[tonumber(arg)]:submit()
+            end
+            return false
+        end,
+        ["d"] = function(num)
+            if not num then return true end -- expect a number
+            print("delay" .. num)
+            local delay = tonumber(num)
+            repeat until ((startTime:check() * 1000) > delay)
+            return false
+        end,
+        ["w"] = function(num)
+            if not num then return true end -- expect a number
+            print("wait" .. num)
+            return false
+        end,
+        ["s"] = function()
+            print("start")
+            repeat until DesignedBattle.hasRepeatButton()
+            startTime:set()
+            return false
+        end,
+        ["e"] = function()
+            print("end")
+            return false
+        end,
+        ["q"] = function()
+            print("quit")
+            scriptExit("Exit by designed battle script")
+            return false
+        end,
+    }
 end
 
 function DesignedBattle:hasReturn()
-    return BattleReturn:exists("Battle_return.png") ~= nil
+    return BattleReturn:exists("BattleReturn.png") ~= nil
 end
 
 function DesignedBattle:triggerReturn()
-    BattleReturn:existsClick("Battle_return.png")
+    BattleReturn:existsClick("BattleReturn.png")
 end
 
 function DesignedBattle.clickAuto()
     return R28_0711:existsClick("Auto.png") ~= nil
+end
+
+function DesignedBattle.clickRepeat()
+    return R28_0711:existsClick("Repeat.png") ~= nil
 end
 
 function DesignedBattle:triggerAuto()
@@ -236,7 +335,7 @@ function DesignedBattle:run(data)
 end
 
 function DesignedBattle:interaction(round)
-	proVibrate(1)
+    proVibrate(1)
     dialogInit()
         addTextView("請等到所有隊員皆有行動力之後再按確認")newRow()
         addRadioGroup("DB_ROUND_ACTION", 1)
@@ -249,7 +348,7 @@ function DesignedBattle:interaction(round)
                 addRadioButton("結束互動式, 按照上一回合設定的行動", 10)
             end
         addCheckBox("DB_TRIGGER", "設定完技能後是否觸發動作", true)newRow()
-    	proVibrate(1)
+        proVibrate(1)
     dialogShow("回合"..round)
 
     self.roundAction = DB_ROUND_ACTION
@@ -344,3 +443,6 @@ function DesignedBattle:loop()
         end
     end
 end
+
+
+
