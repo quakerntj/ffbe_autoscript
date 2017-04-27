@@ -147,7 +147,7 @@ elseif FUNC == 6 then
 elseif FUNC == 5 then
     -- Code
     db = DesignedBattle(2)
-    local f = io.open(WORK_DIR.."demo1.dbs", "r")
+    local f = io.open(WORK_DIR.."chain.dbs", "r")
     decode(db.interpreter, f:read("*all"))
     f:close()
 
