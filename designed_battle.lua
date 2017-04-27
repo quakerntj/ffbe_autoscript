@@ -85,22 +85,21 @@ function DesignedBattle:initInterpreter()
             local act = tonumber(num)
             if act == 1 then
                 cunit:attack()
-                wait(waitAction)
             elseif act == 2 then
                 cunit:abilityPage()
-                wait(waitAction)
             elseif act == 3 then
                 cunit:itemPage()
             elseif act == 4 then
                 cunit:defence()
-                wait(waitAction)
             end
+            wait(waitAction)
             return false
         end,
         ["i"] = function(num)
             if not num then return true end -- expect a number
             print("index" .. num)
             page:choose(tonumber(num))
+            wait(waitChooseItem)
             return false
         end,
         ["t"] = function(num)
@@ -110,6 +109,7 @@ function DesignedBattle:initInterpreter()
 --            end
             print("target" .. num)
             units[tonumber(num)]:submit()
+            wait(waitChooseTarget)
             return false
         end,
         ["l"] = function(arg)
@@ -133,7 +133,9 @@ function DesignedBattle:initInterpreter()
         end,
         ["w"] = function(num)
             if not num then return true end -- expect a number
-            print("wait" .. num)
+            local sec = tonumber(num) / S1000
+            print("wait" .. sec)
+            wait(sec)
             return false
         end,
         ["s"] = function()
@@ -170,7 +172,7 @@ function DesignedBattle.clickRepeat()
     return R28_0711:existsClick("Repeat.png") ~= nil
 end
 
-function DesignedBattle:triggerAuto()
+function DesignedBattle.triggerAuto()
     if R28_0711:exists("Auto.png") then
         match = R28_0711:getLastMatch()
         R28_0711:click(match)
@@ -192,7 +194,7 @@ end
 function DesignedBattle:triggerRepeat()
     if (R28_0711:existsClick("Repeat.png")) then
         -- make sure all unit run.
-        self:triggerAuto()
+        DesignedBattle.triggerAuto()
     end
 end
 
@@ -331,7 +333,7 @@ function DesignedBattle:run(data)
     end
     
     -- Let rest units run auto.
-    self:triggerAuto()
+    DesignedBattle.triggerAuto()
 end
 
 function DesignedBattle:interaction(round)
@@ -436,7 +438,7 @@ function DesignedBattle:loop()
             self:run(data)
         elseif self.roundAction == 4 then
             round = round - 1
-            self:triggerAuto()
+            DesignedBattle.triggerAuto()
         elseif self.roundAction == 5 then
             round = round - 1
             self:triggerRepat()

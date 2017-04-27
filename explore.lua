@@ -95,9 +95,9 @@ function Explorer:run()
 						battleRound = battleRound + 1
 						if battleRound > 1 then
 							if self.autoOrRepeat == 1 then
-								self.db:triggerAuto()
+								DesignedBattle.triggerAuto()
 							else
-								self.db:triggerRepeat()
+								DesignedBattle.triggerRepeat()
 							end
 						else					
 							self.db:run(self.data)

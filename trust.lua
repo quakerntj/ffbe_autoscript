@@ -259,7 +259,7 @@ function TrustManager:looper()
 					if DesignedBattle.hasRepeatButton() then
 						trust.battleRound = trust.battleRound + 1
 						if trust.battleRound > 1 then
-							trust.db:triggerRepeat()
+							DesignedBattle.triggerRepeat()
 						else
 							trust.db:run(trust.data)
 						end
