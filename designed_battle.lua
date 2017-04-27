@@ -74,13 +74,11 @@ function DesignedBattle:initInterpreter()
     self.interpreter = {
         ["u"] = function(num)
             if not num then return true end -- expect a number
-            print("unit" .. num)
             cunit = units[tonumber(num)]
             return false
         end,
         ["a"] = function(num)
             if not num then return true end -- expect a number
-            print("action" .. num)
             if not cunit then return false end
             local act = tonumber(num)
             if act == 1 then
@@ -97,7 +95,6 @@ function DesignedBattle:initInterpreter()
         end,
         ["i"] = function(num)
             if not num then return true end -- expect a number
-            print("index" .. num)
             page:choose(tonumber(num))
             wait(waitChooseItem)
             return false
@@ -107,18 +104,16 @@ function DesignedBattle:initInterpreter()
 --            if not self:hasReturn() then
 --                scriptExit("Error when select target unit "..num)
 --            end
-            print("target" .. num)
             units[tonumber(num)]:submit()
             wait(waitChooseTarget)
             return false
         end,
         ["l"] = function(arg)
             if not arg then return true end -- expect a argument
-            print("launch" .. arg)
             if arg == "r" then
-                DesignedBattle.clickRepeat()
+                DesignedBattle.clickRepeat() -- triggerRepeat will imply trigger auto now...
             elseif arg == "a" then
-                DesignedBattle.clickAuto()
+                DesignedBattle.triggerAuto()
             else
                 units[tonumber(arg)]:submit()
             end
@@ -126,7 +121,6 @@ function DesignedBattle:initInterpreter()
         end,
         ["d"] = function(num)
             if not num then return true end -- expect a number
-            print("delay" .. num)
             local delay = tonumber(num)
             repeat until ((startTime:check() * 1000) > delay)
             return false
@@ -134,22 +128,18 @@ function DesignedBattle:initInterpreter()
         ["w"] = function(num)
             if not num then return true end -- expect a number
             local sec = tonumber(num) / S1000
-            print("wait" .. sec)
             wait(sec)
             return false
         end,
         ["s"] = function()
-            print("start")
             repeat until DesignedBattle.hasRepeatButton()
             startTime:set()
             return false
         end,
         ["e"] = function()
-            print("end")
             return false
         end,
         ["q"] = function()
-            print("quit")
             scriptExit("Exit by designed battle script")
             return false
         end,

@@ -64,6 +64,7 @@ end
 
 function TrustManager:init()
 	local QuestList = { "1", "2", "3", "4", "5" }
+	local DBScriptList = { "quest1", "arena1", "explor1" }
 	QUEST = 1
 	dialogInit()
 	CLEAR_LIMIT = 999
@@ -75,7 +76,8 @@ function TrustManager:init()
 	BUY = false
 	addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
 	BATTLE_ABILITY = false
-	addCheckBox("BATTLE_ABILITY", "戰鬥第一回合開始使用技能, 之後Repeat", false) newRow()
+	BATTLE_DBS = false
+	addCheckBox("BATTLE_ABILITY", "使用技能", false)addSpinner("BATTLE_DBS", DBScriptList, DBScriptList[1])newRow()
 	STATE = "ChooseLevel"
 	addTextView("Begin STATE")addSpinner("STATE", self.States, 2)newRow()
 	if DEBUG then
@@ -91,7 +93,10 @@ function TrustManager:init()
 	self.useAbility = BATTLE_ABILITY
 	if self.useAbility then
 		self.db = DesignedBattle()
-		self.data = self.db:obtain(20)  -- a dialog to set ability when first time obtain.
+		local f = io.open(WORK_DIR .. BATTLE_DBS .. ".dbs", "r")
+		self.dbScript = f:read("*all")
+		f:close()
+--		self.data = self.db:obtain(20)  -- a dialog to set ability when first time obtain.
 	end
 
 	if BRIGHTNESS then
@@ -257,12 +262,13 @@ function TrustManager:looper()
 			if inBattle then
 				if trust.useAbility then
 					if DesignedBattle.hasRepeatButton() then
-						trust.battleRound = trust.battleRound + 1
-						if trust.battleRound > 1 then
-							DesignedBattle.triggerRepeat()
-						else
-							trust.db:run(trust.data)
-						end
+--						trust.battleRound = trust.battleRound + 1
+--						if trust.battleRound > 1 then
+--							DesignedBattle.triggerRepeat()
+--						else
+--							trust.db:run(trust.data)
+--						end
+	    				decode(trust.db.interpreter, trust.dbScript)
 					end
 				else -- not use ability
 					if not self.autoPressed then
