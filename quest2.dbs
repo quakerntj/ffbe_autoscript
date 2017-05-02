@@ -10,7 +10,8 @@ s '1
   la
 e
 s '2 Giant
-  lr 'GateOfDestiny 2, 3
+  u1a2i17 'GateOfDestiny 1
+  l1 'GateOfDestiny 2, 3
   w2500
   la
 e
