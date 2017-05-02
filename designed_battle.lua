@@ -263,7 +263,7 @@ end
             if not num then return true end -- expect a number
             local delay = tonumber(num)
             holder.script = holder.script .. [[
-    repeat until ((startTime:check() * 1000) > ]]..delay..[[)
+        repeat until ((startTime:check() * 1000) > ]]..delay..[[)
 
 ]]
             return false
@@ -272,7 +272,7 @@ end
             if not num then return true end -- expect a number
             local sec = tonumber(num) / 1000
             holder.script = holder.script .. [[
-    wait(]]..sec..[[)
+        wait(]]..sec..[[)
 
 ]]
             return false
