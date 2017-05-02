@@ -1,0 +1,71 @@
+' magic continental
+' u1 is Queen, u2 has debuff, u3 is Setzer
+s '1
+  u1a2i17 'GateOfDestiny 1
+  u2a4
+  u3a4
+  u4a4
+  u5a4
+  u6a4
+  la
+e
+s '2 Giant
+  lr 'GateOfDestiny 2, 3
+  w2500
+  la
+e
+s '3
+  u1a2i13 'Balestra Lunge
+  u2a2i14 'Def down
+  u3a2i11 'Double Dice
+  l2
+  la
+e
+s '4
+  lr
+e
+s '5
+  u1a2i10 'Devastate
+  u2a2i14 'Def down
+  u3a2i12 'Cursed Card
+  l2l3l1
+  la
+e
+s '6
+  u2a2i16 'Weak
+  u3a2i12 'Cursed Card
+  l2l3lr
+e
+s '7
+  u2a2i14 'Def down
+  u3a2i11 'Double Dice
+  l2l3lr
+e
+s '8
+  lrla
+e
+s '9
+  lrla
+e
+s '9
+  la
+e
+
+' round 1
+s
+    u1a2i6
+    u2a4u3a4u4a4u5a4u6a4
+    la
+e
+'Global action
+
+
+' magic continental
+
+s
+  u1a2i17
+  u2a2i14 'i16
+  u3a2i12
+  la
+e
+  
