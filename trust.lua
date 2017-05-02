@@ -96,6 +96,7 @@ function TrustManager:init()
 		local f = io.open(WORK_DIR .. BATTLE_DBS .. ".dbs", "r")
 		self.dbScript = f:read("*all")
 		f:close()
+		self.db:decode(self.dbScript)
 --		self.data = self.db:obtain(20)  -- a dialog to set ability when first time obtain.
 	end
 
@@ -262,13 +263,14 @@ function TrustManager:looper()
 			if inBattle then
 				if trust.useAbility then
 					if DesignedBattle.hasRepeatButton() then
---						trust.battleRound = trust.battleRound + 1
+                        trust.db:runScript(trust.battleRound)
+
+						trust.battleRound = trust.battleRound + 1
 --						if trust.battleRound > 1 then
 --							DesignedBattle.triggerRepeat()
 --						else
 --							trust.db:run(trust.data)
 --						end
-	    				decode(trust.db.interpreter, trust.dbScript)
 					end
 				else -- not use ability
 					if not self.autoPressed then

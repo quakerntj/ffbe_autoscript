@@ -31,3 +31,6 @@ end
 function typeOf(obj)
     return type(obj)
 end
+
+function scriptExit() end
+

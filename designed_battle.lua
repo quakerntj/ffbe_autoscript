@@ -57,6 +57,7 @@ function DesignedBattle.new()
     self.trigger = true
     self.rounds = 1
     self:initInterpreter()
+    self:initCompiler()
     return self
 end
 
@@ -72,12 +73,12 @@ function DesignedBattle:initInterpreter()
     local caction = false  -- current action
 
     self.interpreter = {
-        ["u"] = function(num)
+        ["u"] = function(holder, num)
             if not num then return true end -- expect a number
             cunit = units[tonumber(num)]
             return false
         end,
-        ["a"] = function(num)
+        ["a"] = function(holder, num)
             if not num then return true end -- expect a number
             if not cunit then return false end
             local act = tonumber(num)
@@ -93,13 +94,13 @@ function DesignedBattle:initInterpreter()
             wait(waitAction)
             return false
         end,
-        ["i"] = function(num)
+        ["i"] = function(holder, num)
             if not num then return true end -- expect a number
             page:choose(tonumber(num))
             wait(waitChooseItem)
             return false
         end,
-        ["t"] = function(num)
+        ["t"] = function(holder, num)
             if not num then return true end -- expect a number
 --            if not self:hasReturn() then
 --                scriptExit("Error when select target unit "..num)
@@ -108,7 +109,7 @@ function DesignedBattle:initInterpreter()
             wait(waitChooseTarget)
             return false
         end,
-        ["l"] = function(arg)
+        ["l"] = function(holder, arg)
             if not arg then return true end -- expect a argument
             if arg == "r" then
                 DesignedBattle.clickRepeat() -- triggerRepeat will imply trigger auto now...
@@ -119,34 +120,174 @@ function DesignedBattle:initInterpreter()
             end
             return false
         end,
-        ["d"] = function(num)
+        ["d"] = function(holder, num)
             if not num then return true end -- expect a number
             local delay = tonumber(num)
             repeat until ((startTime:check() * 1000) > delay)
             return false
         end,
-        ["w"] = function(num)
+        ["w"] = function(holder, num)
             if not num then return true end -- expect a number
             local sec = tonumber(num) / S1000
             wait(sec)
             return false
         end,
-        ["s"] = function()
+        ["s"] = function(holder)
             repeat until DesignedBattle.hasRepeatButton()
             startTime:set()
             return false
         end,
-        ["e"] = function()
+        ["e"] = function(holder)
             return false
         end,
-        ["q"] = function()
+        ["q"] = function(holder)
             scriptExit("Exit by designed battle script")
             return false
         end,
     }
 end
 
-function DesignedBattle:hasReturn()
+
+function DesignedBattle:initCompiler()
+    self.compiler = {
+        ["s"] = function(holder)
+            if not holder.init then
+                holder.waitAction = 0.2
+                holder.waitChooseItem = 0.3
+                holder.waitChooseTarget = 0.3
+
+                holder.script = [[
+function DesignedBattle:runScript(round)
+    local units = self.scene.units
+    local page = self.scene.page
+    local startTime = Timer()
+    local cunit = false  -- current unit
+    local caction = false  -- current action
+    startTime:set()
+
+]]
+                holder.round = 1
+                holder.init = true
+            end
+            holder.script = holder.script .. [[
+    if round == ]]..holder.round..[[ then
+]]
+            holder.round = holder.round + 1
+            return false
+        end,
+        ["e"] = function(holder)
+            holder.script = holder.script .. [[
+        return
+    end
+]]
+            return false
+        end,
+        ["EOF"] = function(holder)
+            holder.script = holder.script .. [[
+end
+]]
+        end,
+        ["q"] = function(holder)
+            holder.script = holder.script .. [[
+        scriptExit("Exit by designed battle script")
+]]
+            return false
+        end,
+        ["u"] = function(holder, num)
+            if not num then return true end -- expect a number
+                holder.script = holder.script .. [[
+        cunit = units[]]..num..[[]
+]]
+            return false
+        end,
+        ["a"] = function(holder, num)
+            if not num then return true end -- expect a number
+            local act = tonumber(num)
+            if act == 1 then
+                holder.script = holder.script .. [[        cunit:attack()
+]]
+            elseif act == 2 then
+                holder.script = holder.script .. [[        cunit:abilityPage()
+]]
+            elseif act == 3 then
+                holder.script = holder.script .. [[        cunit:itemPage()
+]]
+            elseif act == 4 then
+                holder.script = holder.script .. [[        cunit:defence()
+]]
+            end
+            holder.script = holder.script .. [[        wait(]]..holder.waitAction..[[)
+]]
+            return false
+        end,
+        ["i"] = function(holder, num)
+            if not num then return true end -- expect a number
+            holder.script = holder.script .. [[
+        page:choose(]]..num..[[)
+        wait(]].. holder.waitChooseItem ..[[)
+
+]]
+            return false
+        end,
+        ["t"] = function(holder, num)
+            if not num then return true end -- expect a number
+            holder.script = holder.script .. [[
+
+        if not DesignedBattle.hasReturn() then
+            scriptExit("Error when select target unit "..num)
+        end
+        units[]] .. num ..[[]:submit()
+        wait(]]..holder.waitChooseTarget..[[)
+]]
+            return false
+        end,
+        ["l"] = function(holder, arg)
+            if not arg then return true end -- expect a argument
+            if arg == "r" then
+                -- triggerRepeat will imply trigger auto now, use clickRepeat().
+                holder.script = holder.script .. [[
+        DesignedBattle.clickRepeat()
+]]
+            elseif arg == "a" then
+                holder.script = holder.script .. [[
+        DesignedBattle.triggerAuto()
+]]
+            else
+                holder.script = holder.script .. [[
+    units[]]..arg..[[]:submit()
+]]
+            end
+            return false
+        end,
+        ["d"] = function(holder, num)
+            if not num then return true end -- expect a number
+            local delay = tonumber(num)
+            holder.script = holder.script .. [[
+    repeat until ((startTime:check() * 1000) > ]]..delay..[[)
+
+]]
+            return false
+        end,
+        ["w"] = function(holder, num)
+            if not num then return true end -- expect a number
+            local sec = tonumber(num) / 1000
+            holder.script = holder.script .. [[
+    wait(]]..sec..[[)
+
+]]
+            return false
+        end,
+    }
+end
+
+function DesignedBattle:decode(dbscript)
+    local holder = {}
+    decode(self.compiler, dbscript, holder)
+    print(holder.script)
+    assert(loadstring(holder.script))()
+end
+
+function DesignedBattle.hasReturn()
     return BattleReturn:exists("BattleReturn.png") ~= nil
 end
 
@@ -231,7 +372,7 @@ function DesignedBattle:chooseActions(data, round)
     dialogInit()
         addTextView("輸入技能與道具的'欄位'自左向右, 然後換行, 由1開始, 1是極限技")newRow()
         for i = 1, 6 do
-        offset = i + (round - 1) * 6
+            offset = i + (round - 1) * 6
             addCheckBox("unitEnable"..offset, "兵員"..i, true)
             addTextView("行動")addSpinnerIndex("unitAction"..offset, UnitActions, 1)
             addTextView("欄位")addEditNumber("unitIndex"..offset, 1)newRow()

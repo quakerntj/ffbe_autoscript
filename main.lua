@@ -53,38 +53,6 @@ require("trust")
 require("explore")
 
 -- ========== Dialogs ================
-MemoryListMajor = {
-    "隊伍1",  -- Team 1
-    "隊伍2",
-    "隊伍3",
-    "隊伍4",
-    "隊伍5",
-    "鬥技場1",  -- Arena 1
-    "鬥技場2",
-    "鬥技場3",
-    "鬥技場4",
-}
-
-MemoryListMinor = {
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-}
-
-DialogOptions = {
-    "完成", -- complete and submit
-    "暫離10秒", -- pause and leave dialog for 10 seconds
-    "上一頁", -- previous page
-}
 
 dialogInit()
 FUNC=1
@@ -100,10 +68,8 @@ BRIGHTNESS = false IMMERSIVE = true
 MEMORY_MAJOR = 1
 MEMORY_MINOR = 1
 DIALOG_OPTION = 1
-addTextView("技能記憶卡")addSpinnerIndex("MEMORY_MAJOR", MemoryListMajor, 1)addSpinnerIndex("MEMORY_MINOR", MemoryListMinor, 1)newRow() -- Ability memory card
 addCheckBox("BRIGHTNESS", "螢幕亮度最低 ", true)addCheckBox("IMMERSIVE", "Immersive", true)newRow() -- brightness low
 addCheckBox("DEBUG", "Debug ", true)addCheckBox("PRO", "專業版", false)newRow() -- for PRO version
-addTextView("對話框功能")addSpinnerIndex("DIALOG_OPTION", DialogOptions, 1)
 dialogShow("選擇自動化功能")
 setImmersiveMode(IMMERSIVE)
 
@@ -147,7 +113,7 @@ elseif FUNC == 6 then
 elseif FUNC == 5 then
     -- Code
     db = DesignedBattle(2)
-    local f = io.open(WORK_DIR.."chain.dbs", "r")
+    local f = io.open(WORK_DIR.."quest1.dbs", "r")
     decode(db.interpreter, f:read("*all"))
     f:close()
 

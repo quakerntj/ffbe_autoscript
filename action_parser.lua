@@ -7,7 +7,7 @@
     d# delay ms since first launch.  No float.
     w# wait for #ms, not like 
 
-    s start need sround a battle round by start-end.  Will detect battle start.
+    s start need sround a battle round by start-end.
     e end need sround a battle round by start-end
     q quit -- quit will call ankulua's scriptExit
 
@@ -52,56 +52,56 @@ end
 
 
 DefaultInterpreter = {
-    ["u"] = function(num)
+    ["u"] = function(holder, num)
         if not num then return true end -- expect a number
         print("unit" .. num)
         return false
     end,
-    ["a"] = function(num)
+    ["a"] = function(holder, num)
         if not num then return true end -- expect a number
         print("action" .. num)
         return false
     end,
-    ["i"] = function(num)
+    ["i"] = function(holder, num)
         if not num then return true end -- expect a number
         print("index" .. num)
         return false
     end,
-    ["t"] = function(num)
+    ["t"] = function(holder, num)
         if not num then return true end -- expect a number
         print("target" .. num)
         return false
     end,
-    ["l"] = function(arg)
+    ["l"] = function(holder, arg)
         if not arg then return true end -- expect a argument
         print("launch" .. arg)
         return false
     end,
-    ["d"] = function(num)
+    ["d"] = function(holder, num)
         if not num then return true end -- expect a number
         print("delay" .. num)
         return false
     end,
-    ["w"] = function(num)
+    ["w"] = function(holder, num)
         if not num then return true end -- expect a number
         print("wait" .. num)
         return false
     end,
-    ["s"] = function()
+    ["s"] = function(holder)
         print("start")
         return false
     end,
-    ["e"] = function()
+    ["e"] = function(holder)
         print("end")
         return false
     end,
-    ["q"] = function()
+    ["q"] = function(holder)
         print("quit")
         return false
     end,
 }
 
-function decode(interpreter, str)
+function decode(syntax, str, _holder)
     if not str then print("The code is not a string") return end
     if not typeOf(str) == 'string' then print("The code is not a string") return end
     local syntaxError = false
@@ -166,19 +166,25 @@ function decode(interpreter, str)
 
     getNext()
     local currentCode = nil
+    local holder = {}  -- holder is used to keep data.
+    if _holder ~= nil then
+        holder = _holder
+    end
+
+    holder.init = false
     repeat
         id, buffer = parser()
         if id == nil then
-            return nil
+            break
         end
         if id == 'code' or id == 'number' then
             if currentCode then
-                interpreter[currentCode](buffer)
+                syntax[currentCode](holder, buffer)
                 expectNext = false
                 currentCode = nil
             else
                 if id == 'code' then
-                    expectNext = interpreter[buffer]()
+                    expectNext = syntax[buffer](holder)
                     if expectNext then
                         currentCode = buffer
                     end
@@ -188,4 +194,7 @@ function decode(interpreter, str)
             end
         end
     until (id == nil)
+    syntax["EOF"](holder)
+
+    return holder.script
 end
