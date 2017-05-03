@@ -32,6 +32,7 @@ function Explorer.new()
 end
 
 function Explorer:init()
+	local DBScriptList = { "explore1.dbs", "explore2.dbs", "explore3.dbs", "explore4.dbs", "explore5.dbs" }
 	dialogInit()
 		MOVE_PATTERN = 1
 		TIMEOUT_LIMIT = 5
@@ -47,12 +48,9 @@ function Explorer:init()
 			addRadioButton("O 繞圈", 5)
 			addRadioButton("R 隨機", 6) newRow()
 
-		BATTLE_ABILITY = true
-		addCheckBox("BATTLE_ABILITY", "戰鬥一開始使用技能一次", true) newRow()
-		addTextView("使用技能後, 若沒有一回合殺, 下一回合的行動為") newRow()
-		addRadioGroup("BATTLE_AUTO_OR_REPEAT", 1)
-			addRadioButton("Auto", 1)
-			addRadioButton("Repeat", 2)
+	    BATTLE_ABILITY = false
+	    BATTLE_DBS = false
+	    addCheckBox("BATTLE_ABILITY", "使用技能", false)addSpinner("BATTLE_DBS", DBScriptList, DBScriptList[1])newRow()
     dialogShow("Auto Exploration")
 
 	self.movePattern = MOVE_PATTERN
@@ -61,10 +59,12 @@ function Explorer:init()
 	
 	
 	self.useAbility = BATTLE_ABILITY
-	self.autoOrRepeat = BATTLE_AUTO_OR_REPEAT
 	if self.useAbility then
 		self.db = DesignedBattle()
-		self.data = self.db:obtain(1)  -- a dialog to set ability when first time obtain.
+		local f = io.open(WORK_DIR .. BATTLE_DBS, "r")
+		self.dbScript = f:read("*all")
+		f:close()
+		self.db:decode(self.dbScript)
 	end
 
 	if BRIGHTNESS then
@@ -87,21 +87,13 @@ function Explorer:run()
 				isAutoActivate = DesignedBattle.clickAuto()
 			end
 
-			local battleRound = 0
+			local battleRound = 1
 			repeat
 				if DEBUG then BattleIndicator:highlight(0.2) end
 				if BattleIndicator:exists("Battle.png") then
 					if self.useAbility and DesignedBattle.hasRepeatButton() then
+                        self.db:runScript(battleRound)
 						battleRound = battleRound + 1
-						if battleRound > 1 then
-							if self.autoOrRepeat == 1 then
-								DesignedBattle.triggerAuto()
-							else
-								DesignedBattle.triggerRepeat()
-							end
-						else					
-							self.db:run(self.data)
-						end
 					end
 				else
 					if DEBUG then R23_0111:highlight(0.2) end
