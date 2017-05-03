@@ -16,17 +16,17 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
-TrustManager = {}
-TrustManager.__index = TrustManager
+Farmer = {}
+Farmer.__index = Farmer
 
-setmetatable(TrustManager, {
+setmetatable(Farmer, {
 	__call = function (cls, ...)
 		return cls.new(...)
 	end,
 })
 
-function TrustManager.new()
-	local self = setmetatable({}, TrustManager)
+function Farmer.new()
+	local self = setmetatable({}, Farmer)
 	self.errorCount = 0
 	self.clearLimit = 999
 	self.highlightTime = 0.7
@@ -62,7 +62,7 @@ function TrustManager.new()
 	return self
 end
 
-function TrustManager:init()
+function Farmer:init()
 	local QuestList = { "1", "2", "3", "4", "5" }
 	local DBScriptList = { "quest1.dbs", "quest2.dbs", "quest3.dbs", "quest4.dbs", "quest5.dbs" }
 	local BuyLoop = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" }
@@ -87,7 +87,7 @@ end
 		HIGHLIGHT_TIME = 0.7
 		addTextView("Highlight time")addEditNumber("HIGHLIGHT_TIME", 0.7)newRow()
 	end
-	dialogShow("Trust Master Maker".." - "..X.." × "..Y)
+	dialogShow("Quest Farmer ".." - "..X.." × "..Y)
 	proSetScanInterval(SCAN_INTERVAL)
 	self.quest = QUEST
 	self.clearLimit = CLEAR_LIMIT
@@ -147,7 +147,7 @@ function isGameOver(inBattle)
 	return false
 end
 
-function TrustManager:looper()
+function Farmer:looper()
 	local watchdog = self.watchdog
 
 	--local ResultNext = Region(600, 2200, 240, 100)
@@ -231,7 +231,7 @@ function TrustManager:looper()
 			return "IsInBattle"
 		end,
 
-		["Battle"] = function(watchdog, trust)
+		["Battle"] = function(watchdog, farmer)
 			if DEBUG then BattleIndicator:highlight(self.highlightTime) end
 			if self.paused then
 				local battleReturn = R48_3611:exists("BattleReturn.png")
@@ -252,7 +252,7 @@ function TrustManager:looper()
 
 			-- handle GameOver
 			if isGameOver(inBattle) then
-				trust.battleRound = 0
+				farmer.battleRound = 0
 				self.autoPressed = false
 				self.giveup = true
 				self.giveupCount = self.giveupCount + 1
@@ -264,16 +264,11 @@ function TrustManager:looper()
 			end
 
 			if inBattle then
-				if trust.useAbility then
+				if farmer.useAbility then
 					if DesignedBattle.hasRepeatButton() then
-                        trust.db:runScript(trust.battleRound)
+                        farmer.db:runScript(farmer.battleRound)
 
-						trust.battleRound = trust.battleRound + 1
---						if trust.battleRound > 1 then
---							DesignedBattle.triggerRepeat()
---						else
---							trust.db:run(trust.data)
---						end
+						farmer.battleRound = farmer.battleRound + 1
 					end
 				else -- not use ability
 					if not self.autoPressed then
@@ -311,7 +306,7 @@ function TrustManager:looper()
  		   			end
 				else
 					-- Battle finished
-					trust.battleRound = 0
+					farmer.battleRound = 0
 					self.autoPressed = false
 					self.giveup = false
 					return "ResultGil"
@@ -409,7 +404,7 @@ function TrustManager:looper()
 	print("Quest clear:"..self.loopCount.."/"..self.clearLimit.."("..self.totalTimer:check().."s)")
 end
 
-function TrustManager.dogBarking(self, watchdog)
+function Farmer.dogBarking(self, watchdog)
 	local friendChoice1 = "PickupFriend.png"
 	local friendChoice2 = "NoFriend.png"
 
@@ -451,7 +446,7 @@ function TrustManager.dogBarking(self, watchdog)
 			print("Error can't be handled. Stop Script.")
 			print("Quest clear:"..self.loopCount.."/"..self.clearLimit.."("..self.totalTimer:check().."s)")
 			vibratePattern()
-			scriptExit("Trust Manger finished")
+			scriptExit("Farmer finished")
 			return
 		else
 			print("Error count: " ..self.errorCount)

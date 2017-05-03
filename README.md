@@ -9,7 +9,7 @@ like to keep update this.
 The many pictures for searching locations are with Chinese letters.  If you are other language user, you should change your image for yourself.
 
 This script has following features:
-* Trust farming
+* Quest/Event/Trust farming
   * Auto battle
   * Use abilities.
   * Use items.

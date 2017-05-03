@@ -49,7 +49,7 @@ require("action_parser")
 require("battle_scene")
 require("designed_battle")
 require("watchdog")
-require("trust")
+require("farmer")
 require("explore")
 
 -- ========== Dialogs ================
@@ -74,9 +74,9 @@ dialogShow("選擇自動化功能")
 setImmersiveMode(IMMERSIVE)
 
 if FUNC == 1 then
-    trust = TrustManager()
-    trust:looper()
-    scriptExit("Trust finish")
+    farmer = Farmer()
+    farmer:looper()
+    scriptExit("Farmer finish")
 elseif FUNC == 2 then
     REPEAT_COUNT = 4
     dialogInit()

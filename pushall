@@ -1,16 +1,16 @@
 #!/bin/bash
-adb shell mkdir -p /sdcard/AnkuLua/ffbe_trust/image
+adb shell mkdir -p /sdcard/AnkuLua/ffbe_autoscript/image
 for lua in `ls -1 *.lua`
 do
     echo
     echo $lua
-    adb push $lua /sdcard/AnkuLua/ffbe_trust/
+    adb push $lua /sdcard/AnkuLua/ffbe_autoscript/
 done
 cd image
 for png in `ls -1 *.png`
 do
     echo
     echo $png
-    adb push $png /sdcard/AnkuLua/ffbe_trust/image/
+    adb push $png /sdcard/AnkuLua/ffbe_autoscript/image/
 done
 cd -

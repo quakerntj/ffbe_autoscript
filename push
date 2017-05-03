@@ -2,7 +2,7 @@
 if [ "$1" != "" ]; then
     if [ -f "$1" ]; then
         echo $1
-        adb push $1 //sdcard/AnkuLua/ffbe_trust/`dirname $1`
+        adb push $1 //sdcard/AnkuLua/ffbe_autoscript/`dirname $1`
     else
         echo "\"$1\" does not exist"
     fi
@@ -11,6 +11,6 @@ else
     do
         echo
         echo $lua
-        adb push $lua //sdcard/AnkuLua/ffbe_trust/
+        adb push $lua //sdcard/AnkuLua/ffbe_autoscript/
     done
 fi
