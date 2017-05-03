@@ -113,3 +113,5 @@ the script's meanings.
 * ' inline comment '
 * " nested 'comment'"
 
+### Example
+Please check out the [demo1.dbs](https://github.com/quakerntj/ffbe_autoscript/blob/master/demo1.dbs) or [quest2.dbs](https://github.com/quakerntj/ffbe_autoscript/blob/master/quest2.dbs).
