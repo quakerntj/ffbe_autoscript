@@ -64,17 +64,20 @@ end
 
 function TrustManager:init()
 	local QuestList = { "1", "2", "3", "4", "5" }
-	local DBScriptList = { "quest1", "arena1", "explor1" }
+	local DBScriptList = { "quest1.dbs", "quest2.dbs", "quest3.dbs", "quest4.dbs", "quest5.dbs" }
+	local BuyLoop = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" }
 	QUEST = 1
 	dialogInit()
 	CLEAR_LIMIT = 999
 	addTextView("執行次數：")addEditNumber("CLEAR_LIMIT", 999)newRow()
 	--addTextView("體力不足時等待 (分)：")addEditNumber("WAIT_TIME", 3)newRow()
-	addTextView("選擇關卡：")addSpinnerIndex("QUEST", QuestList, 6)newRow()
+	addTextView("選擇關卡：")addSpinnerIndex("QUEST", QuestList, 5)newRow()
 	SCAN_INTERVAL = 2
+if DEBUG then
 	addTextView("掃描頻率：")addEditNumber("SCAN_INTERVAL", SCAN_INTERVAL)newRow()
+end
 	BUY = false
-	addCheckBox("BUY", "使用寶石回復體力 ", false)addEditNumber("BUY_LOOP", 2)addTextView(" 回")newRow()
+	addCheckBox("BUY", "使用寶石回復體力 ", false)addSpinnerIndex("BUY_LOOP", BuyLoop, 5)addTextView(" 回")newRow()
 	BATTLE_ABILITY = false
 	BATTLE_DBS = false
 	addCheckBox("BATTLE_ABILITY", "使用技能", false)addSpinner("BATTLE_DBS", DBScriptList, DBScriptList[1])newRow()
@@ -93,7 +96,7 @@ function TrustManager:init()
 	self.useAbility = BATTLE_ABILITY
 	if self.useAbility then
 		self.db = DesignedBattle()
-		local f = io.open(WORK_DIR .. BATTLE_DBS .. ".dbs", "r")
+		local f = io.open(WORK_DIR .. BATTLE_DBS, "r")
 		self.dbScript = f:read("*all")
 		f:close()
 		self.db:decode(self.dbScript)
