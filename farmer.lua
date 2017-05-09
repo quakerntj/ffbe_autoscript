@@ -53,6 +53,7 @@ function Farmer.new()
 		"Battle",
 		"ResultGil",
 		"ResultExp",
+		"NoResultItem",
 		"ResultItem",
 		"Clear"
 	}
@@ -81,6 +82,8 @@ end
 	BATTLE_ABILITY = false
 	BATTLE_DBS = false
 	addCheckBox("BATTLE_ABILITY", "使用技能", false)addSpinner("BATTLE_DBS", DBScriptList, DBScriptList[1])newRow()
+	NO_ROOT = false
+	addCheckBox("NO_ROOT", "無道具關卡(如經驗之間)", false)newRow()
 	STATE = "ChooseLevel"
 	addTextView("Begin STATE")addSpinner("STATE", self.States, 2)newRow()
 	if DEBUG then
@@ -92,6 +95,7 @@ end
 	self.quest = QUEST
 	self.clearLimit = CLEAR_LIMIT
 	self.initlaState = STATE
+	self.noRoot = NO_ROOT
 
 	self.useAbility = BATTLE_ABILITY
 	if self.useAbility then
@@ -340,9 +344,21 @@ function Farmer:looper()
 			if (ResultExp:existsClick("ResultExp.png")) then
 				wait(0.2)
 				click(ResultExp:getLastMatch())
+				if self.noRoot then -- For Experience Room.
+				    return "NoResultItem"
+				end
 				return "ResultItem"
 			end
 			return "ResultExp"
+		end,
+		["NoResultItem"] = function()
+		    wait(1.5)
+		    if (self.friend) then
+				-- Not to add new friend
+				if DEBUG then R25_0311:highlight(self.highlightTime) end
+				R25_0311:existsClick("NotApplyNewFriend.png", 3)
+			end
+			return "Clear"
 		end,
 		["ResultItem"] = function()
 			wait(1)
@@ -356,7 +372,7 @@ function Farmer:looper()
 				if (self.friend) then
 					-- Not to add new friend
 					if DEBUG then R25_0311:highlight(self.highlightTime) end
-					R25_0311:existsClick("NotApplyNewFriend.png", 5)
+					R25_0311:existsClick("NotApplyNewFriend.png", 4)
 				end
 				return "Clear"
 			end
