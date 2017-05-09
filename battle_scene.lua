@@ -131,9 +131,6 @@ function BattlePage:choose(destIdx, srcIdx)
 			item 16 will need line up 1 page and 2 row
 	--]]
     local lines, pages, itemIdx = self:linesCalculator(destIdx, srcIdx)
-    print(lines)
-    print(pages)
-    print(itemIdx)
 
     if pages > 0 then
 		self:pageUp(pages)
