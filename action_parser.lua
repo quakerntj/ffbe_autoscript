@@ -172,6 +172,8 @@ function decode(syntax, str, _holder)
     end
 
     holder.init = false
+    local hasError = false
+    local expectNext = false
     repeat
         id, buffer = parser()
         if id == nil then
@@ -179,19 +181,23 @@ function decode(syntax, str, _holder)
         end
         if id == 'code' or id == 'number' then
             if currentCode then
-                syntax[currentCode](holder, buffer)
+                expectNext, hasError = syntax[currentCode](holder, buffer)
                 expectNext = false
                 currentCode = nil
             else
                 if id == 'code' then
-                    expectNext = syntax[buffer](holder)
+                    expectNext, hasError = syntax[buffer](holder)
                     if expectNext then
                         currentCode = buffer
                     end
                 else
-                    print("syntax error at " .. strindex - 1)
+                    print("syntax error at charactor:" .. strindex - 1)
                 end
             end
+        end
+        if hasError then
+            print("syntax error at charactor:" .. strindex - 1)
+            break
         end
     until (id == nil)
     syntax["EOF"](holder)

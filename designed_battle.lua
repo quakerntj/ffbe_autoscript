@@ -162,20 +162,26 @@ function DesignedBattle:runScript(round)
     local page = self.scene.page
     local startTime = Timer()
     local cunit = false  -- current unit
-    local caction = false  -- current action
     startTime:set()
 
 ]]
                 holder.round = 1
-                holder.init = true
+
+                holder.cunit = false
             end
             holder.script = holder.script .. [[
     if round == ]]..holder.round..[[ then
 ]]
+            holder.caction = false
+            holder.cindex = 0
+            holder.init = true
             holder.round = holder.round + 1
             return false
         end,
         ["e"] = function(holder)
+            holder.cunit = false
+            holder.caction = false
+            holder.cindex = 0
             holder.script = holder.script .. [[
         return
     end
@@ -198,41 +204,56 @@ end
                 holder.script = holder.script .. [[
         cunit = units[]]..num..[[]
 ]]
+            holder.cunit = num
+            holder.caction = false
+            holder.cindex = 0
             return false
         end,
         ["a"] = function(holder, num)
             if not num then return true end -- expect a number
+            if not holder.cunit then return false, true end
+
             local act = tonumber(num)
+            holder.script = holder.script .. [[        if not cunit then print("syntax error") return end
+]]
             if act == 1 then
                 holder.script = holder.script .. [[        cunit:attack()
 ]]
+                holder.caction = false
             elseif act == 2 then
                 holder.script = holder.script .. [[        cunit:abilityPage()
 ]]
+                holder.caction = true
             elseif act == 3 then
                 holder.script = holder.script .. [[        cunit:itemPage()
 ]]
+                holder.caction = true
             elseif act == 4 then
                 holder.script = holder.script .. [[        cunit:defence()
 ]]
+                holder.caction = false
             end
-            holder.script = holder.script .. [[        wait(]]..holder.waitAction..[[)
+            holder.script = holder.script .. [[
+        wait(]]..holder.waitAction..[[)
 ]]
             return false
         end,
         ["i"] = function(holder, num)
             if not num then return true end -- expect a number
+            if not holder.cunit then return false, true end
+            if not holder.caction then return false, true end
             holder.script = holder.script .. [[
-        page:choose(]]..num..[[)
+        page:choose(]]..num..[[, ]]..holder.cindex..[[)
         wait(]].. holder.waitChooseItem ..[[)
 
 ]]
+            holder.cindex = tonumber(num)
             return false
         end,
         ["t"] = function(holder, num)
             if not num then return true end -- expect a number
+            if not holder.cindex then return false, true end
             holder.script = holder.script .. [[
-
         if not DesignedBattle.hasReturn() then
             scriptExit("Error when select target unit "..num)
         end

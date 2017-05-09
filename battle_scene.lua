@@ -103,45 +103,76 @@ function BattlePage.new(rect, rects)
 	self.rects = rects
 
 	local lineHeight = rects[3].y - rects[1].y
-	local centerX = (rects[1].x + rects[2].x) / 2
-	local centerY = rects[5]:getCenter().y
 
-	self.dragCenter = Point(centerX, centerY)
-	self.lineUpStep = Point(centerX, centerY -lineHeight)
-	self.pageUpStep = Point(centerX, centerY -lineHeight * 1.5)
+	local upCenterX = (rects[1].x + rects[2].x) / 2
+	local upCenterY = rects[5]:getCenter().y
+
+	self.dragUpCenter = Point(upCenterX, upCenterY)
+	self.lineUpStep = Point(upCenterX, upCenterY - lineHeight)
+	self.pageUpStep = Point(upCenterX, upCenterY - lineHeight * 1.5)
+
+	local downCenterX = (rects[1].x + rects[2].x) / 2
+	local downCenterY = rects[1]:getCenter().y
+
+	self.dragDownCenter = Point(downCenterX, downCenterY)
+	self.lineDownStep = Point(downCenterX, downCenterY + lineHeight)
+	self.pageDownStep = Point(downCenterX, downCenterY + lineHeight * 1.5)
+
 	self.ScrollRegion = Rect(1410, 1592, true, 20, 704)
 	return self
 end
 
 -- Item index is in left-right-nextline order.  And idx count from 1
-function BattlePage:choose(idx)
+function BattlePage:choose(destIdx, srcIdx)
 	--[[
 		For example
 			item 2 will no need line up
 			item 9 will need line up just 2 row.
 			item 16 will need line up 1 page and 2 row
 	--]]
-	local lines = 0
-	local pages = 0
-	local itemIdx = idx
+    local lines, pages, itemIdx = self:linesCalculator(destIdx, srcIdx)
+    print(lines)
+    print(pages)
+    print(itemIdx)
 
-	if idx > 6 then
-		lines = math.ceil(idx / 2) - 3   -- 9: 2, 16: 5
-		pages = math.floor(lines / 3)    -- 9: 0, 16: 1
-		lines = lines - pages * 3        -- 9: 2, 16: 2
-		itemIdx = (idx - 1) % 2 + 4 + 1  -- 9: 5, 16: 6
-
+    if pages > 0 then
 		self:pageUp(pages)
+	elseif pages < 0 then
+		self:pageDown(-pages)
+    end
+    if lines > 0 then
 		self:lineUp(lines)
+	elseif lines < 0 then
+		self:lineDown(-lines)
 	end
+
 	click(self.rects[itemIdx]:getCenter().location)
-    return true
+end
+
+function BattlePage:linesCalculatorInner(idx)
+    local lines = 0
+    local itemIdx = idx
+	if idx ~= nil and idx > 6 then
+		lines = math.ceil(idx / 2) - 3   -- 9: 2, 16: 5
+		itemIdx = (idx - 1) % 2 + 4 + 1  -- 9: 5, 16: 6
+    end
+    return lines, itemIdx
+end
+
+function BattlePage:linesCalculator(dest, src)
+    local dlines, ditemIdx = self:linesCalculatorInner(dest)
+    local slines, sitemIdx = self:linesCalculatorInner(src)
+
+    local lineDiff = dlines - slines
+	local pages = math.floor(lineDiff / 3)    -- 9: 0, 16: 1
+	local lines = lineDiff - pages * 3        -- 9: 2, 16: 2
+    return lines, pages, ditemIdx
 end
 
 function BattlePage:lineUp(lines)
     if lines == 0 then return end
 	for i = 1,lines do
-		dragDrop(self.dragCenter.location, self.lineUpStep.location);
+		dragDrop(self.dragUpCenter.location, self.lineUpStep.location);
 		wait(0.1)
 	end
 end
@@ -149,22 +180,29 @@ end
 function BattlePage:pageUp(pages)
     if pages == 0 then return end
 	for i = 1, pages do
-        dragDrop(self.dragCenter.location, self.pageUpStep.location);
+        dragDrop(self.dragUpCenter.location, self.pageUpStep.location);
 		wait(0.1)
-        dragDrop(self.dragCenter.location, self.pageUpStep.location);
+        dragDrop(self.dragUpCenter.location, self.pageUpStep.location);
 		wait(0.1)
 	end
 end
 
-function BattlePage:nextPage()
-	dragDrop(self.dragCenter.location, self.pageUpStep.location);
-	wait(0.1)
-	dragDrop(self.dragCenter.location, self.pageUpStep.location);
-	wait(0.1)
-	if self.ScrollRegion.region:exists("Battle_Page_Scroll_End.png") then
-		return false
+function BattlePage:lineDown(lines)
+    if lines == 0 then return end
+	for i = 1,lines do
+		dragDrop(self.dragDownCenter.location, self.lineDownStep.location);
+		wait(0.1)
 	end
-	return true
+end
+
+function BattlePage:pageDown(pages)
+    if pages == 0 then return end
+	for i = 1, pages do
+        dragDrop(self.dragDownCenter.location, self.pageDownStep.location);
+		wait(0.1)
+        dragDrop(self.dragDownCenter.location, self.pageDownStep.location);
+		wait(0.1)
+	end
 end
 
 function BattlePage:existsChoose(pattern)
