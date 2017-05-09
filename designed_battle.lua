@@ -214,8 +214,6 @@ end
             if not holder.cunit then return false, true end
 
             local act = tonumber(num)
-            holder.script = holder.script .. [[        if not cunit then print("syntax error") return end
-]]
             if act == 1 then
                 holder.script = holder.script .. [[        cunit:attack()
 ]]
