@@ -61,10 +61,7 @@ function Explorer:init()
 	self.useAbility = BATTLE_ABILITY
 	if self.useAbility then
 		self.db = DesignedBattle()
-		local f = io.open(WORK_DIR .. BATTLE_DBS, "r")
-		self.dbScript = f:read("*all")
-		f:close()
-		self.db:decode(self.dbScript)
+		self.db:decode(WORK_DIR .. BATTLE_DBS)
 	end
 
 	if BRIGHTNESS then

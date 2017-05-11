@@ -299,11 +299,24 @@ end
     }
 end
 
-function DesignedBattle:decode(dbscript)
+function DesignedBattle:decode(finName)
+	local fin = assert(io.open(WORK_DIR .. BATTLE_DBS, "r"))
+	local dbscript = fin:read("*all")
+	fin:close()
+
     local holder = {}
+    print("Compiling...")
     decode(self.compiler, dbscript, holder)
-    print(holder.script)
+    print(holder.script .. "\n")
+
+    local foutName = finName .. "c" -- .dbsc means compiled, like .pyc...
+    print("Save compiled code to " .. foutName .. " for your debug")
+    local fout = assert(io.open(foutName, "a+"))
+    fout:write(holder.script)
+    io.close(fout)
+
     assert(loadstring(holder.script))()
+    print("Script loaded")
 end
 
 function DesignedBattle.hasReturn()
