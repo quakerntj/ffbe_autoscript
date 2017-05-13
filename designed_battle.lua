@@ -252,9 +252,6 @@ end
             if not num then return true end -- expect a number
             if not holder.cindex then return false, true end
             holder.script = holder.script .. [[
-        if not DesignedBattle.hasReturn() then
-            scriptExit("Error when select target unit "..num)
-        end
         units[]] .. num ..[[]:submit()
         wait(]]..holder.waitChooseTarget..[[)
 ]]
