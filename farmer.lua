@@ -267,9 +267,8 @@ function Farmer:looper()
 			if inBattle then
 				if farmer.useAbility then
 					if DesignedBattle.hasRepeatButton() then
-                        farmer.db:runScript(farmer.battleRound)
-
 						farmer.battleRound = farmer.battleRound + 1
+                        farmer.db:runScript(farmer.battleRound)
 					end
 				else -- not use ability
 					if not self.autoPressed then
