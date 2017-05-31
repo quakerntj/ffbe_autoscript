@@ -48,25 +48,6 @@ e
 s '9
   lrla
 e
-s '9
-  la
-e
-
-' round 1
-s
-    u1a2i6
-    u2a4u3a4u4a4u5a4u6a4
-    la
-e
-'Global action
-
-
-' magic continental
-
-s
-  u1a2i17
-  u2a2i14 'i16
-  u3a2i12
-  la
-e
-  
+' Global action
+' this "la" will work since round 10
+la
