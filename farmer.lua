@@ -413,7 +413,13 @@ function Farmer:looper()
 			end
 		end
 	end
+	self:finish()
+end
+
+function Farmer:finish()
 	print("Quest clear:"..self.loopCount.."/"..self.clearLimit.."("..self.totalTimer:check().."s)")
+	vibratePattern()
+	scriptExit("Farmer finished")
 end
 
 function Farmer.dogBarking(self, watchdog)
@@ -452,13 +458,27 @@ function Farmer.dogBarking(self, watchdog)
 	elseif R34_0011:exists("LeftTop_Return.png") then
 		-- keep return until ChooseStage.  Put this check at final.
 		self.state = "ChooseStage"
+	elseif MaterialsTooMany:exists("MaterialsTooMany.png") then
+	    if self.expand then
+            if existsClick("ToExapndMaterials.png") then
+                if existsClick("StoreExpandMaterials.png") then
+                    if existsClick("OK.png") then
+                        -- TODO  not finish
+                        print("TODO ")
+                        self:finish()
+                        return
+                    end
+                end
+            end
+        else
+            print("Materials are too many.  STOP script.")
+            self:finish()
+        end
 	else
 		self.errorCount = self.errorCount + 1
 		if self.errorCount > 3 then
 			print("Error can't be handled. Stop Script.")
-			print("Quest clear:"..self.loopCount.."/"..self.clearLimit.."("..self.totalTimer:check().."s)")
-			vibratePattern()
-			scriptExit("Farmer finished")
+			self:finish()
 			return
 		else
 			print("Error count: " ..self.errorCount)

@@ -146,3 +146,4 @@ end
 ExplorationExitDialog = Region(190, 220, 250, 80)
 ExplorationNotToExit = Region(1060, 925, 72, 72)
 
+MaterialsTooMany = Region(550, 1050, 340, 100)
