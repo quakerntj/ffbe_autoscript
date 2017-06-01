@@ -35,6 +35,7 @@ function Farmer.new()
 	self.useAbility = false
 	self.battleRound = 0
 	self.friend = true
+	self.lastFriend = true
 	self.giveup = false
 	self.giveupCount = 0
 	self.giveupCountLimit = 3
@@ -198,12 +199,22 @@ function Farmer:looper()
 		end,
 		["ChooseFriend"] = function()
 			if DEBUG then R34_1111:highlight(self.highlightTime) end
-			if (R34_1111:existsClick(friendChoice1)) then
-			 self.friend = true
+			local f1, f2
+			if self.lastFriend then
+				f1 = friendChoice1  -- Has friend
+				f2 = friendChoice2  -- No friend
+			else
+				f1 = friendChoice2  -- No friend
+				f2 = friendChoice1  -- Has friend
+			end
+			if (R34_1111:existsClick(f1)) then
+				self.friend = self.lastFriend
 				return "Go"
-			elseif (R34_1111:existsClick(friendChoice2)) then
-			 self.friend = false
-				return "Go"
+			elseif (R34_1111:existsClick(f2)) then
+				-- guess wrong
+				self.lastFriend = not self.lastFriend
+				self.friend = self.lastFriend
+			return "Go"
 			end
 			return "ChooseFriend"
 		end,
@@ -237,12 +248,12 @@ function Farmer:looper()
 			if self.paused then
 				local battleReturn = R48_3611:exists("BattleReturn.png")
 				if battleReturn then
- 		   			click(battleReturn)
+					click(battleReturn)
 					self.paused = false
-	 		   		watchdog:enable(true)
- 		   			toast("resume")
-	   			else
-			   		wait(15)
+					watchdog:enable(true)
+					toast("resume")
+				else
+					wait(15)
 					proVibrate(1)
 					toast("Still paused.  Go to menu to continue.")
 					return "Battle"
@@ -259,7 +270,7 @@ function Farmer:looper()
 				self.giveupCount = self.giveupCount + 1
 				print("GameOver " .. self.giveupCount .. " times.")
 				if self.giveupCount == self.giveupCountLimit then
-				    scriptExit("GameOver too many times")
+					scriptExit("GameOver too many times")
 				end
 				return "ResultGil"
 			end
@@ -268,7 +279,7 @@ function Farmer:looper()
 				if farmer.useAbility then
 					if DesignedBattle.hasRepeatButton() then
 						farmer.battleRound = farmer.battleRound + 1
-                        farmer.db:runScript(farmer.battleRound)
+						farmer.db:runScript(farmer.battleRound)
 					end
 				else -- not use ability
 					if not self.autoPressed then
@@ -293,17 +304,17 @@ function Farmer:looper()
 				local battleReturn = R48_3611:exists("BattleReturn.png")
 				if battleReturn then
 					if self.paused then
-	 		   			click(battleReturn)
+						click(battleReturn)
 						self.paused = false
-		 		   		watchdog:enable(true)
-	 		   			toast("resume")
- 		   			else
-	 		   			toast("Paused.  Continue if keep stay in this menu page.")
+						watchdog:enable(true)
+						toast("resume")
+					else
+						toast("Paused.  Continue if keep stay in this menu page.")
 						self.paused = true
 						proVibrate(1)
-		 		   		watchdog:enable(false)
-		 		   		wait(5)
- 		   			end
+						watchdog:enable(false)
+						wait(5)
+					end
 				else
 					-- Battle finished
 					farmer.battleRound = 0
@@ -341,15 +352,15 @@ function Farmer:looper()
 				wait(0.2)
 				click(ResultExp:getLastMatch())
 				if self.noRoot then -- For Experience Room.
-				    return "NoResultItem"
+					return "NoResultItem"
 				end
 				return "ResultItem"
 			end
 			return "ResultExp"
 		end,
 		["NoResultItem"] = function()
-		    wait(1.5)
-		    if (self.friend) then
+			wait(1.5)
+			if (self.friend) then
 				-- Not to add new friend
 				if DEBUG then R25_0311:highlight(self.highlightTime) end
 				R25_0311:existsClick("NotApplyNewFriend.png", 3)
@@ -459,21 +470,21 @@ function Farmer.dogBarking(self, watchdog)
 		-- keep return until ChooseStage.  Put this check at final.
 		self.state = "ChooseStage"
 	elseif MaterialsTooMany:exists("MaterialsTooMany.png") then
-	    if self.expand then
-            if existsClick("ToExapndMaterials.png") then
-                if existsClick("StoreExpandMaterials.png") then
-                    if existsClick("OK.png") then
-                        -- TODO  not finish
-                        print("TODO ")
-                        self:finish()
-                        return
-                    end
-                end
-            end
-        else
-            print("Materials are too many.  STOP script.")
-            self:finish()
-        end
+		if self.expand then
+			if existsClick("ToExapndMaterials.png") then
+				if existsClick("StoreExpandMaterials.png") then
+					if existsClick("OK.png") then
+						-- TODO  not finish
+						print("TODO ")
+						self:finish()
+						return
+					end
+				end
+			end
+		else
+			print("Materials are too many.  STOP script.")
+			self:finish()
+		end
 	else
 		self.errorCount = self.errorCount + 1
 		if self.errorCount > 3 then

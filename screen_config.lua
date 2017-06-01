@@ -119,7 +119,7 @@ DTABLE[5] = Location(DXC, DYC)
 
 BattleIndicator = Region(0, 1350, 40, 250)
 ResultExp = Region(560, 1000, 590, 400)
-ResultGil = Region(405, 1000, 260, 80)
+ResultGil = Region(385, 890, 300, 300)
 BattleReturn = Region(1180, 2320, 170, 140)
 CloseAndGoTo = Region(200, 1515, 1024, 134)
 
