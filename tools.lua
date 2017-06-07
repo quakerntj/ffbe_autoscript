@@ -140,8 +140,8 @@ end
 function Rect:expand(x0, y0, x1, y1)
     self.x = self.x - x0
     self.y = self.y - y0
-    self.w = self.w - x1
-    self.h = self.h - y1
+    self.w = self.w + x1
+    self.h = self.h + y1
     self.region = Region(self.x, self.y, self.w, self.h)
 end
 
@@ -192,4 +192,37 @@ function iconcat(dest, offset, count, src)
             return
         end
     end
+end
+
+-- Create a new class that inherits from a base class
+--
+function inheritsFrom( baseClass )
+
+    -- The following lines are equivalent to the SimpleClass example:
+
+    -- Create the table and metatable representing the class.
+    local new_class = {}
+    local class_mt = { __index = new_class }
+
+    -- Note that this function uses class_mt as an upvalue, so every instance
+    -- of the class will share the same metatable.
+    --
+    function new_class:create()
+        local newinst = {}
+        setmetatable( newinst, class_mt )
+        return newinst
+    end
+
+    -- The following is the key to implementing inheritance:
+
+    -- The __index member of the new class's metatable references the
+    -- base class.  This implies that all methods of the base class will
+    -- be exposed to the sub-class, and that the sub-class can override
+    -- any of these methods.
+    --
+    if baseClass then
+        setmetatable( new_class, { __index = baseClass } )
+    end
+
+    return new_class
 end

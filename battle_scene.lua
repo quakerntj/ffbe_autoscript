@@ -16,15 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
-BattleLocationInit = false
-BattleLocationItems = {}
-
-function AttackAllClick(order)
-	for i,unit in ipairs(order) do
-		click(BIL[unit])
-	end
-end
-
 -- ======== Class Battle Unit/Scene =======
 BattleUnit = {}
 BattleUnit.__index = BattleUnit
@@ -39,6 +30,7 @@ function BattleUnit.new(rect)
 	local self = setmetatable({}, BattleUnit)
 	self.rect = rect
 	self.center = rect:getCenter()
+    self.attackRect = Rect(self.rect.x, self.rect.y, true, 70, 60)
 	
 	local swipeStep = 400
 	self.swipeRight = self.center + Point(swipeStep, 0)
@@ -66,6 +58,10 @@ end
 
 function BattleUnit:checkExists()
 	return not ((self.rect.region:exists("Limit.png")) == nil)
+end
+
+function BattleUnit:isReadyToAttack()
+	return self.attackRect.region:exists("NormalAttack.png")
 end
 
 function BattleUnit:submit()
