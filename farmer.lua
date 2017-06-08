@@ -169,6 +169,7 @@ function Farmer:looper()
 		["ChooseLevel"] = function()
 			if hasQuest(true, self.quest) then
 				click(QuestLocations[self.quest])
+				wait(0.8)
 				return "Challenge"
 			end
 --			if DEBUG then R24_0113:highlight(self.highlightTime) end
