@@ -186,12 +186,12 @@ function Farmer:looper()
 			end
 			usePreviousSnap(true)
 			if (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
+			 usePreviousSnap(false)
 				wait(1)
 				R24_1211:existsClick("Buy_Yes.png")
 				print("使用寶石回復體力")
 				wait(5)
 				BUY_LOOP = BUY_LOOP - 1
-				usePreviousSnap(false)
 				return "Challenge"
 			end
 			if (R34_1211:existsClick("Stamina_Back.png")) then
