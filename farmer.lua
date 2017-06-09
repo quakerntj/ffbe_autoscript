@@ -183,19 +183,25 @@ function Farmer:looper()
 			if (R34_1311:existsClick("Next.png")) then
 				wait(0.8)
 				return "ChooseFriend"
-			elseif (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
+			end
+			usePreviousSnap(true)
+			if (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
 				wait(1)
 				R24_1211:existsClick("Buy_Yes.png")
 				print("使用寶石回復體力")
 				wait(5)
 				BUY_LOOP = BUY_LOOP - 1
-			elseif (R34_1211:existsClick("Stamina_Back.png")) then
+    			usePreviousSnap(false)
+				return "Challenge"
+            end
+			if (R34_1211:existsClick("Stamina_Back.png")) then
 				toast('體力不足，等待中...')
-				proSetScanInterval(10)
 				wait(30)
-				proSetScanInterval(SCAN_INTERVAL)
+    			usePreviousSnap(false)
+    			watchdog:touch()
 				return "ChooseLevel"
 			end
+			usePreviousSnap(false)
 			return "Challenge"
 		end,
 		["ChooseFriend"] = function()
@@ -211,17 +217,23 @@ function Farmer:looper()
 			if (R34_1111:existsClick(f1)) then
 				self.friend = self.lastFriend
 				return "Go"
-			elseif (R34_1111:existsClick(f2)) then
+			end
+		    usePreviousSnap(true)
+			if (R34_1111:existsClick(f2)) then
 				-- guess wrong
 				self.lastFriend = not self.lastFriend
 				self.friend = self.lastFriend
-			return "Go"
+				usePreviousSnap(false)
+    			return "Go"
 			end
+			usePreviousSnap(false)
 			return "ChooseFriend"
 		end,
 		["Go"] = function()
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if (R34_1311:existsClick("Go.png")) then
+			    wait(5)
+                watchdog:touch()			    
 				return "IsInBattle"
 			end
 			return "Go"
@@ -234,13 +246,16 @@ function Farmer:looper()
 				self.autoPressed = false
 				return "Battle"
 			end
+			usePreviousSnap(true)
 			if DEBUG then FriendChange:highlight(self.highlightTime) end
 			if FriendChange:exists("FriendChange.png") then
+			    usePreviousSnap(false)
 				if DEBUG then FriendChangeOK:highlight(self.highlightTime) end
 				if FriendChangeOK:existsClick("OK.png") then
 					return "ChooseFriend"
 				end
 			end
+			usePreviousSnap(false)
 			return "IsInBattle"
 		end,
 
@@ -277,8 +292,10 @@ function Farmer:looper()
 			end
 
 			if inBattle then
+                usePreviousSnap(true)
 				if farmer.useAbility then
 					if DesignedBattle.hasRepeatButton() then
+                        usePreviousSnap(false)
 						farmer.battleRound = farmer.battleRound + 1
 						farmer.db:runScript(farmer.battleRound)
 					end
@@ -288,6 +305,7 @@ function Farmer:looper()
 							self.autoMatch = R28_0711:getLastMatch()
 							if DEBUG then R28_0711:highlight(self.highlightTime) end
 							self.autoPressed = true
+						    wait(4)
 						else
 							-- weird ...
 							toast("Can't find Auto button. Maybe pressed.")
@@ -297,12 +315,17 @@ function Farmer:looper()
 							r,g,b = getColor(self.autoMatch)
 							if (r+g+b) < 150 then
 								self.autoPressed = false
+							else
+							    wait(4)
 							end
 						end
 					end
 				end
+                usePreviousSnap(false)
 			else  -- not in battle
+			    usePreviousSnap(true)
 				local battleReturn = R48_3611:exists("BattleReturn.png")
+				usePreviousSnap(false)
 				if battleReturn then
 					if self.paused then
 						click(battleReturn)
@@ -335,14 +358,17 @@ function Farmer:looper()
 			-- click "GIL" icon for speed up and skip rank up
 			if DEBUG then ResultGil:highlight(self.highlightTime) end
 			ResultGil:existsClick("ResultGil.png")
+		    usePreviousSnap(true)
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if R34_1311:existsClick("Next1.png") then
+    		    usePreviousSnap(false)
 				if self.giveup then
 					self.giveup = false
 					return "ChooseLevel"
 				end
 				return "ResultExp"
 			end
+		    usePreviousSnap(false)
 			return "ResultGil"
 		end,
 
@@ -441,8 +467,11 @@ function Farmer.dogBarking(self, watchdog)
 	if DEBUG then toast("Watchdog barking") end
 	if (R13_0111:exists("Communication_Error.png")) then
 		R33_1111:existsClick("OK.png")
-	elseif CloseAndGoTo:exists("GoTo.png") then
+	end
+    usePreviousSnap(true)
+	if CloseAndGoTo:exists("GoTo.png") then
 		-- If you finish 3 battle after daily timer reset, a dialog will popup.
+        usePreviousSnap(false)
 		CloseAndGoTo:existsClick("Close.png")
 		self.state = "ChooseStage"
 	elseif R33_1111:existsClick("OK.png") then
@@ -471,6 +500,7 @@ function Farmer.dogBarking(self, watchdog)
 		-- keep return until ChooseStage.  Put this check at final.
 		self.state = "ChooseStage"
 	elseif MaterialsTooMany:exists("MaterialsTooMany.png") then
+        usePreviousSnap(false)
 		if self.expand then
 			if existsClick("ToExapndMaterials.png") then
 				if existsClick("StoreExpandMaterials.png") then
@@ -478,6 +508,7 @@ function Farmer.dogBarking(self, watchdog)
 						-- TODO  not finish
 						print("TODO ")
 						self:finish()
+                        usePreviousSnap(false)
 						return
 					end
 				end
@@ -488,7 +519,7 @@ function Farmer.dogBarking(self, watchdog)
 		end
 	else
 		self.errorCount = self.errorCount + 1
-		if self.errorCount > 3 then
+		if self.errorCount > 4 then
 			print("Error can't be handled. Stop Script.")
 			self:finish()
 			return
@@ -501,4 +532,5 @@ function Farmer.dogBarking(self, watchdog)
 			return
 		end
 	end
+    usePreviousSnap(false)
 end
