@@ -424,7 +424,7 @@ function Farmer:looper()
 	watchdog:touch() --prevent dialog took too long
 
 	while self.loopCount < self.clearLimit do
-
+		usePreviousSnap(false)
 		if DEBUG then toast(self.state) end
 
 		-- run state machine
@@ -517,6 +517,7 @@ function Farmer.dogBarking(self, watchdog)
 			self:finish()
 		end
 	else
+		usePreviousSnap(false)
 		self.errorCount = self.errorCount + 1
 		if self.errorCount > 4 then
 			print("Error can't be handled. Stop Script.")
@@ -527,9 +528,11 @@ function Farmer.dogBarking(self, watchdog)
 			toast("Error count: " ..self.errorCount)
 			DEBUG = true
 			vibratePattern()
+			wait(5)
 			-- not to touch dog when error
 			return
 		end
 	end
 	usePreviousSnap(false)
+	wait(5)
 end
