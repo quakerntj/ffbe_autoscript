@@ -293,9 +293,7 @@ function Farmer:looper()
 
 			if inBattle then
 				if farmer.useAbility then
-					usePreviousSnap(true)
 					if DesignedBattle.hasRepeatButton() then
-						usePreviousSnap(false)
 						farmer.battleRound = farmer.battleRound + 1
 						farmer.db:runScript(farmer.battleRound)
 					end
