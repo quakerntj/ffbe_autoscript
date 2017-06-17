@@ -160,6 +160,7 @@ function DesignedBattle:initCompiler()
 function DesignedBattle:runScript(round)
     local units = self.scene.units
     local page = self.scene.page
+    local scene = self.scene
     local startTime = Timer()
     local cunit = false  -- current unit
     startTime:set()
@@ -176,7 +177,7 @@ function DesignedBattle:runScript(round)
             holder.cindex = 0
             holder.init = true
             holder.round = holder.round + 1
-            return false
+            return 1, false
         end,
         ["e"] = function(holder)
             holder.cunit = false
@@ -186,34 +187,51 @@ function DesignedBattle:runScript(round)
         return
     end
 ]]
-            return false
+            return 1, false
         end,
         ["EOF"] = function(holder)
             holder.script = holder.script .. [[
 end
 ]]
+            return 1, false
         end,
         ["q"] = function(holder)
             holder.script = holder.script .. [[
         scriptExit("Exit by designed battle script")
 ]]
-            return false
+            return 1, false
         end,
-        ["u"] = function(holder, num)
-            if not num then return true end -- expect a number
-                holder.script = holder.script .. [[
+        ["u"] = function(holder, buffer)
+            local bufferSize = table.getn(buffer)
+            if bufferSize == 1 then return 0, false
+            elseif bufferSize > 2 then return 0, true, "internal error"
+            elseif bufferSize == 2 and buffer[2][1] ~= 'number' then
+                return 0, true, "Expect a number after 'u'"
+            end
+            local num = tonumber(buffer[2][2])
+
+            holder.script = holder.script .. [[
         cunit = units[]]..num..[[]
 ]]
             holder.cunit = num
             holder.caction = false
             holder.cindex = 0
-            return false
+            return 2, false
         end,
-        ["a"] = function(holder, num)
-            if not num then return true end -- expect a number
-            if not holder.cunit then return false, true end
 
-            local act = tonumber(num)
+        ["a"] = function(holder, buffer)
+            if not holder.cunit then return 0, true,
+                "Need specified a unit first" end
+
+            local bufferSize = table.getn(buffer)
+            if bufferSize == 1 then return 0, false
+            elseif bufferSize > 2 then return 0, true, "internal error"
+            elseif bufferSize == 2 and buffer[2][1] ~= 'number' then
+                return 0, true, "Expect a number after 'a'"
+            end
+
+            local num = tonumber(buffer[2][2])
+            local act = num
             if act == 1 then
                 holder.script = holder.script .. [[        cunit:attack()
 ]]
@@ -234,64 +252,153 @@ end
             holder.script = holder.script .. [[
         wait(]]..holder.waitAction..[[)
 ]]
-            return false
+            return 2, false
         end,
-        ["i"] = function(holder, num)
-            if not num then return true end -- expect a number
-            if not holder.cunit then return false, true end
-            if not holder.caction then return false, true end
+
+        ["i"] = function(holder, buffer)
+            if not holder.cunit then return 0, true,
+                "Need specified a unit first" end
+            if not holder.caction then return 0, true,
+                "Need specified an action (2 or 3) first" end
+
+            local bufferSize = table.getn(buffer)
+            if bufferSize == 1 then return 0, false
+            elseif bufferSize > 2 then return 0, true, "internal error"
+            elseif bufferSize == 2 and buffer[2][1] ~= 'number' then
+                return 0, true, "Expect a number after 'i'"
+            end
+
+            local num = tonumber(buffer[2][2])
+
             holder.script = holder.script .. [[
         page:choose(]]..num..[[, ]]..holder.cindex..[[)
         wait(]].. holder.waitChooseItem ..[[)
 
 ]]
-            holder.cindex = tonumber(num)
-            return false
+            holder.cindex = num -- The last index, used for dual cast. 
+            return 2, false
         end,
-        ["t"] = function(holder, num)
-            if not num then return true end -- expect a number
-            if not holder.cindex then return false, true end
+        
+        ["t"] = function(holder, buffer)
+            if not holder.cindex then return 0, true,
+                "'t' can only be used after 'i'" end
+
+            local bufferSize = table.getn(buffer)
+            if bufferSize == 1 then return 0, false
+            elseif bufferSize > 2 then return 0, true, "internal error"
+            elseif bufferSize == 2 and buffer[2][1] ~= 'number' then
+                return 0, true, "Expect a number after 't'"
+            end
+            
+            local num = tonumber(buffer[2][2])
             holder.script = holder.script .. [[
         units[]] .. num ..[[]:submit()
         wait(]]..holder.waitChooseTarget..[[)
 ]]
-            return false
+            return 2, false
         end,
-        ["l"] = function(holder, arg)
-            if not arg then return true end -- expect a argument
-            if arg == "r" then
-                -- triggerRepeat will imply trigger auto now, use clickRepeat().
-                holder.script = holder.script .. [[
+        ["l"] = function(holder, buffer)
+            local bufferSize = table.getn(buffer)
+            local endAt = 0
+            local i = bufferSize
+            local even = (i % 2) == 0
+            if even then
+                if buffer[i][1] ~= 'number' then
+                    if buffer[i][2] ~= nil and
+                        (buffer[i][2] == 'a' or buffer[i][2] == 'r') then
+                    else
+                        return 0, true, "Expect a number after 'l', or 'la', or 'lr'"
+                    end
+                end
+                -- get following command to check if it's an 'l'
+                return 0, false
+            else -- odd
+                if buffer[i][1] == 'EOF' or (buffer[i][2] ~= 'l'
+                    and buffer[i][2] ~= 'w') then
+                    -- No further 'l'.  Stop parsing following command.
+                    endAt = i - 1
+                else
+                    -- get the following number
+                    return 0, false
+                end
+            end
+
+            local bufferIdx = 2
+            repeat
+                local launchList = {}
+                for i = bufferIdx, endAt, 2 do
+                    if buffer[i][1] == 'number' then
+                        table.insert(launchList, buffer[i][2])
+                        bufferIdx = i + 2    
+                    else
+                        if table.getn(launchList) ~= 0 then
+                            bufferIdx = i
+                            break
+                        end
+                        if buffer[i][2] == "r" then
+                            -- triggerRepeat will imply trigger auto now, use clickRepeat().
+                            holder.script = holder.script .. [[
         DesignedBattle.clickRepeat()
 ]]
-            elseif arg == "a" then
-                holder.script = holder.script .. [[
+                            bufferIdx = i + 2    
+                            break
+                        elseif buffer[i][2] == "a" then
+                            holder.script = holder.script .. [[
         DesignedBattle.triggerAuto()
 ]]
-            else
-                holder.script = holder.script .. [[
-    units[]]..arg..[[]:submit()
+                            if i == endAt then
+                                return endAt, false
+                            else 
+                                return 0, true,
+        "Can't launch an unit after press auto. 'la' should be the last command"
+                            end
+                        end
+                    end
+                end
+                
+                local numLaunch = table.getn(launchList)
+                if numLaunch ~= 0 then
+                    -- TODO Check repeat units or wait too short.  wait should longer than 6ms.
+                    holder.script = holder.script .. [[
+        scene:submit(]] .. launchList[1] .. [[
 ]]
-            end
-            return false
+                    for i = 2, numLaunch do
+                        holder.script = holder.script .. [[,]] .. launchList[i]
+                    end
+                    holder.script = holder.script .. [[)
+]]
+                end
+            until (bufferIdx > endAt)
+            return endAt, false
         end,
-        ["d"] = function(holder, num)
-            if not num then return true end -- expect a number
-            local delay = tonumber(num)
+
+        ["d"] = function(holder, buffer)
+            local bufferSize = table.getn(buffer)
+            if bufferSize == 1 then return 0, false
+            elseif bufferSize > 2 then return 0, true, "internal error"
+            elseif bufferSize == 2 and buffer[2][1] ~= 'number' then
+                return 0, true, "Expect a number after 'd'"
+            end
+            local delay = tonumber(buffer[2][2])
             holder.script = holder.script .. [[
         repeat until ((startTime:check() * 1000) > ]]..delay..[[)
 
 ]]
-            return false
+            return 2, false
         end,
-        ["w"] = function(holder, num)
-            if not num then return true end -- expect a number
-            local sec = tonumber(num) / 1000
+        ["w"] = function(holder, buffer)
+            local bufferSize = table.getn(buffer)
+            if bufferSize == 1 then return 0, false
+            elseif bufferSize > 2 then return 0, true, "internal error"
+            elseif bufferSize == 2 and buffer[2][1] ~= 'number' then
+                return 0, true, "Expect a number after 'w'"
+            end
+            local sec = tonumber(buffer[2][2]) / 1000
             holder.script = holder.script .. [[
         wait(]]..sec..[[)
 
 ]]
-            return false
+            return 2, false
         end,
     }
 end

@@ -247,6 +247,24 @@ function BattleScene.new()
 	return self
 end
 
+function BattleScene:submit(...)
+    local s = table.getn(arg)
+	local touchList = {}
+	for i = 1, s do
+        if arg[i] > 6 then
+		    table.insert(touchList, {action = "wait", target = (arg[i] / 1000)})
+        else
+            local unit = self.units[arg[i]]
+            local center = unit.center.location
+            table.insert(touchList, {action = "touchDown", target = center})
+		    table.insert(touchList, {action = "wait", target = 0.002})
+            table.insert(touchList, {action = "touchUp", target = center})
+		    table.insert(touchList, {action = "wait", target = 0.001})
+	    end
+	end
+    manualTouch(touchList)
+end
+
 function BattleScene:chooseByImage(pattern)
 	while not self.page.exitsChoose(pattern) do
 		if not self.page:nextPage() then
@@ -255,3 +273,5 @@ function BattleScene:chooseByImage(pattern)
 	end
 	return true
 end
+
+
