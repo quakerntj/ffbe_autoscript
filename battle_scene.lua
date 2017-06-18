@@ -259,7 +259,7 @@ function BattleScene:submit(...)
             table.insert(touchList, {action = "touchDown", target = center})
 		    table.insert(touchList, {action = "wait", target = 0.002})
             table.insert(touchList, {action = "touchUp", target = center})
-		    table.insert(touchList, {action = "wait", target = 0.001})
+		    table.insert(touchList, {action = "wait", target = 0.01})
 	    end
 	end
     manualTouch(touchList)
