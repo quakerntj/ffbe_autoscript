@@ -114,7 +114,9 @@ You can insert white space and comment to let it more human readable:
 
 * *w#*
 
-  Wait for *#* millisecond.
+  Wait for *#* milliseconds.  The number of milliseconds should be **greater than
+  6**.  In the compiler, for input performance, the number are used with units
+  index, which has a max value, **6**.
 
 <!--
 * *d#*
