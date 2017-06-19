@@ -41,7 +41,22 @@ the script's meanings.
 ## The DBS Syntax
   In order to correctly detect the round begin and end, Please let all unit has
   actions.
-  
+
+### Space and Newline
+DBS will ignore all white space including the line change in its script, for 
+example, 0x20, '\t', '\r', and '\n'.  However the comment will end with new line.
+
+You can insert space in all commands.  For example, a compact script,
+
+    su1a1l1lrlae
+
+You can insert white space and comment to let it more human readable:
+
+    s  ' round 1
+      u 1 a 1  ' prepare normal attack, unit 1
+      l1 lr l a   ' Go, unit 1 and some units repeat the actions last round, and the rest auto attack.
+    e
+
 ### Basic instructions
 * *s*
 
