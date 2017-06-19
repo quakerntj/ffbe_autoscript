@@ -101,10 +101,10 @@ the script's meanings.
 
   Wait for *#* millisecond.
 
+<!--
 * *d#*
-
   Wait since first unit was launched for *#* millisecond.
-
+!-->
 
 ### Comment
 * ' line comment
@@ -114,4 +114,19 @@ the script's meanings.
 * " nested 'comment'"
 
 ### Example
+#### basic
+
+    s ' the 1st round battle (not the showing rounds, like (3/4 round), in the game)
+      u1a2i5 ' unit 1 use index 5 ability
+      u2a3i1 ' unit 2 use index 1 item
+      u3a2i14i5i6 ' unit 3 use index 14 ability, which is dual cast.  And select magics at indext 5 and at index 6
+      l1 w500 l2 w10 l3 ' launch unit 1, wait 500ms, launch unit 2, wait 10ms, launch unit 3
+      la ' launch all other players by "Auto" button of game UI.
+    e ' end 1st round
+    s ' the 2nd round
+      lr ' repeat last round by "Repeat" button of game UI
+    e ' end 2nd round
+    lr  ' if round is greater than 2nd round, do a global command, "Repeat"
+
+#### other demo
 Please check out the [demo1.dbs](https://github.com/quakerntj/ffbe_autoscript/blob/master/demo1.dbs) or [quest2.dbs](https://github.com/quakerntj/ffbe_autoscript/blob/master/quest2.dbs).
