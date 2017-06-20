@@ -403,6 +403,13 @@ end
     }
 end
 
+function DesignedBattle:decodeScript(dbscript)
+    local holder = {}
+    decode(self.compiler, dbscript, holder)
+    print(holder.script .. "\n")
+    assert(loadstring(holder.script))()
+end
+
 function DesignedBattle:decode(finName)
 	local fin = assert(io.open(WORK_DIR .. BATTLE_DBS, "r"))
 	local dbscript = fin:read("*all")
