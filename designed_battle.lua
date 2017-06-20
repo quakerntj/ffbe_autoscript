@@ -56,107 +56,19 @@ function DesignedBattle.new()
     self.roundAction = 1
     self.trigger = true
     self.rounds = 1
-    self:initInterpreter()
     self:initCompiler()
     return self
 end
 
-function DesignedBattle:initInterpreter()
-    local waitAction = 0.2
-    local waitChooseItem = 0.3
-    local waitChooseTarget = 0.3
-    local startTime = Timer()
-    
-    local units = self.scene.units
-    local page = self.scene.page
-    local cunit = false  -- current unit
-    local caction = false  -- current action
-
-    self.interpreter = {
-        ["u"] = function(holder, num)
-            if not num then return true end -- expect a number
-            cunit = units[tonumber(num)]
-            return false
-        end,
-        ["a"] = function(holder, num)
-            if not num then return true end -- expect a number
-            if not cunit then return false end
-            local act = tonumber(num)
-            if act == 1 then
-                cunit:attack()
-            elseif act == 2 then
-                cunit:abilityPage()
-            elseif act == 3 then
-                cunit:itemPage()
-            elseif act == 4 then
-                cunit:defence()
-            end
-            wait(waitAction)
-            return false
-        end,
-        ["i"] = function(holder, num)
-            if not num then return true end -- expect a number
-            page:choose(tonumber(num))
-            wait(waitChooseItem)
-            return false
-        end,
-        ["t"] = function(holder, num)
-            if not num then return true end -- expect a number
---            if not self:hasReturn() then
---                scriptExit("Error when select target unit "..num)
---            end
-            units[tonumber(num)]:submit()
-            wait(waitChooseTarget)
-            return false
-        end,
-        ["l"] = function(holder, arg)
-            if not arg then return true end -- expect a argument
-            if arg == "r" then
-                DesignedBattle.clickRepeat() -- triggerRepeat will imply trigger auto now...
-            elseif arg == "a" then
-                DesignedBattle.triggerAuto()
-            else
-                units[tonumber(arg)]:submit()
-            end
-            return false
-        end,
-        ["d"] = function(holder, num)
-            if not num then return true end -- expect a number
-            local delay = tonumber(num)
-            repeat until ((startTime:check() * 1000) > delay)
-            return false
-        end,
-        ["w"] = function(holder, num)
-            if not num then return true end -- expect a number
-            local sec = tonumber(num) / S1000
-            wait(sec)
-            return false
-        end,
-        ["s"] = function(holder)
-            repeat until DesignedBattle.hasRepeatButton()
-            startTime:set()
-            return false
-        end,
-        ["e"] = function(holder)
-            return false
-        end,
-        ["q"] = function(holder)
-            scriptExit("Exit by designed battle script")
-            return false
-        end,
-    }
-end
-
-
 function DesignedBattle:initCompiler()
     self.compiler = {
-        ["s"] = function(holder)
-            if not holder.init then
-                holder.waitAction = 0.2
-                holder.waitChooseItem = 0.3
-                holder.waitChooseTarget = 0.3
+        ["BOF"] = function(holder)
+            if holder.init then return 0, true, "internal error" end
+            holder.waitAction = 0.2
+            holder.waitChooseItem = 0.3
+            holder.waitChooseTarget = 0.3
 
-                holder.script = [[
+            holder.script = [[
 function DesignedBattle:runScript(round)
     local units = self.scene.units
     local page = self.scene.page
@@ -166,16 +78,17 @@ function DesignedBattle:runScript(round)
     startTime:set()
 
 ]]
-                holder.round = 1
-
-                holder.cunit = false
-            end
+            holder.round = 1
+            holder.cunit = false
+            holder.init = true
+            return 1, false
+        end,
+        ["s"] = function(holder)
             holder.script = holder.script .. [[
     if round == ]]..holder.round..[[ then
 ]]
             holder.caction = false
             holder.cindex = 0
-            holder.init = true
             holder.round = holder.round + 1
             return 1, false
         end,

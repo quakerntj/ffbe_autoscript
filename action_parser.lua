@@ -68,57 +68,6 @@ function iswhitespace(c)
     return c == 32 or c == 11 or iseol(c)
 end
 
-
-DefaultInterpreter = {
-    ["u"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("unit" .. num)
-        return false
-    end,
-    ["a"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("action" .. num)
-        return false
-    end,
-    ["i"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("index" .. num)
-        return false
-    end,
-    ["t"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("target" .. num)
-        return false
-    end,
-    ["l"] = function(holder, arg)
-        if not arg then return true end -- expect a argument
-        print("launch" .. arg)
-        return false
-    end,
-    ["d"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("delay" .. num)
-        return false
-    end,
-    ["w"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("wait" .. num)
-        return false
-    end,
-    ["s"] = function(holder)
-        print("start")
-        return false
-    end,
-    ["e"] = function(holder)
-        print("end")
-        return false
-    end,
-    ["q"] = function(holder)
-        print("quit")
-        return false
-    end,
-}
-
 function decode(syntax, str, _holder)
     if not str then print("The code is not a string") return end
     if not typeOf(str) == 'string' then print("The code is not a string") return end
@@ -203,13 +152,21 @@ function decode(syntax, str, _holder)
     end
 
     holder.init = false
-    local codeBuffer = {} -- each element has both id and code/number
+--[[
+    Each codeBuffer element has both id and data(code/number), data will not be
+    nil.
+    
+    Syntax start at BOF (Begining of File), and end at EOF (End of File).
+--]]
+    
+    local codeBuffer = {}
     local hasError = false
     local consumption = 0
     local msg = ""
     local hadEOF = false
     local lastCodeBufferSize = 0  -- prevent endless loop
     
+    table.insert(codeBuffer, {'BOF', 'BOF'})
     repeat
 --[[
     Collect a pair of command and call correspond syntax
@@ -228,17 +185,22 @@ function decode(syntax, str, _holder)
                 table.insert(codeBuffer, code)
             end
         end
+
+        -- consume all commands in the buffer once parser()
+        repeat
+
         if codeBuffer ~= nil and table.getn(codeBuffer) > 0 then
             if codeBuffer[1][1] == 'number' then
-                reportError("Meaning less number")
+                hasError = true
+                msg = "Meaning less number"
                 break
             end
+
             consumption, hasError, msg =
                 syntax[codeBuffer[1][2]](holder, codeBuffer)
 
             if hasError then
-                reportError(msg)
-                break
+                break -- break consumption loop
             else
                 if consumption > 0 then
                     for i = 1, consumption do
@@ -246,6 +208,15 @@ function decode(syntax, str, _holder)
                     end
                 end
             end
+        else
+            consumption = 0
+        end
+
+        until (consumption == 0)
+
+        if hasError then
+            reportError(msg)
+            break  -- break the parser loop
         end
 
         if hadEOF then
