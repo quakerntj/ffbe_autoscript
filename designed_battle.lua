@@ -241,8 +241,12 @@ end
                 local launchList = {}
                 for i = bufferIdx, endAt, 2 do
                     if buffer[i][1] == 'number' then
-                        table.insert(launchList, buffer[i][2])
-                        bufferIdx = i + 2    
+                        if buffer[i-1][2] == 'w' then
+                            table.insert(launchList, "-" .. buffer[i][2])
+                        else
+                            table.insert(launchList, buffer[i][2])
+                        end
+                        bufferIdx = i + 2
                     else
                         if table.getn(launchList) ~= 0 then
                             bufferIdx = i

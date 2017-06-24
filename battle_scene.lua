@@ -247,26 +247,32 @@ function BattleScene.new()
 	return self
 end
 
+--[[
+    submit(1,3,-100,4)  means launch 1,3 together and wait 100ms, then launch 4
+--]]
 function BattleScene:submit(...)
 	local s = table.getn(arg)
 	local touchList = {}
 	for i = 1, s do
-		if arg[i] > 6 then
-			table.insert(touchList, {action = "wait", target = (arg[i] / 1000)})
+	    -- Negative means 'wait'
+		if arg[i] <= 0 then
+			table.insert(touchList, {action = "wait", target = (-arg[i] / 1000)})
 		else
 			local unit = self.units[arg[i]]
 			local center = unit.center.location
 			table.insert(touchList, {action = "touchDown", target = center})
-			table.insert(touchList, {action = "wait", target = 0.0001})
+			table.insert(touchList, {action = "wait", target = 0.00001})
 			table.insert(touchList, {action = "touchUp", target = center})
 
+--[[        Skip wait between each unit's launching for 'Spark Chain'
 			if arg[i+1] ~= nil then
 				-- if has next action, do wait.  If next action is wait, skip wait.
-				if arg[i+1] < 6 then
+				if arg[i+1] <= 0 then
 					-- Next is not wait, use default wait for a frame (60FPS).
-					--table.insert(touchList, {action = "wait", target = 0.0166})
+					table.insert(touchList, {action = "wait", target = 0.00001})
 				end
 			end
+--]]
 		end
 	end
 	manualTouch(touchList)
