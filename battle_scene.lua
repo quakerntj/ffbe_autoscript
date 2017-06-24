@@ -2,18 +2,18 @@
 -- <https://github.com/quakerntj/ffbe_autoscript>
 
 --[[
-    This script is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This script is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This script is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This script is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
 -- ======== Class Battle Unit/Scene =======
@@ -30,11 +30,11 @@ function BattleUnit.new(rect)
 	local self = setmetatable({}, BattleUnit)
 	self.rect = rect
 	self.center = rect:getCenter()
-    self.attackRect = Rect(self.rect.x, self.rect.y, true, 70, 60)
+	self.attackRect = Rect(self.rect.x, self.rect.y, true, 70, 60)
 	
 	local swipeStep = 400
 	self.swipeRight = self.center + Point(swipeStep, 0)
-	self.swipeUp    = self.center + Point(0, -swipeStep)
+	self.swipeUp	= self.center + Point(0, -swipeStep)
 	self.swipeDown  = self.center + Point(0, swipeStep)
 	self.swipeLeft  = self.center + Point(-swipeStep, 0)
 	self.PageStatus = {
@@ -126,14 +126,14 @@ function BattlePage:choose(destIdx, srcIdx)
 			item 9 will need line up just 2 row.
 			item 16 will need line up 1 page and 2 row
 	--]]
-    local lines, pages, itemIdx = self:linesCalculator(destIdx, srcIdx)
+	local lines, pages, itemIdx = self:linesCalculator(destIdx, srcIdx)
 
-    if pages > 0 then
+	if pages > 0 then
 		self:pageUp(pages)
 	elseif pages < 0 then
 		self:pageDown(-pages)
-    end
-    if lines > 0 then
+	end
+	if lines > 0 then
 		self:lineUp(lines)
 	elseif lines < 0 then
 		self:lineDown(-lines)
@@ -143,27 +143,27 @@ function BattlePage:choose(destIdx, srcIdx)
 end
 
 function BattlePage:linesCalculatorInner(idx)
-    local lines = 0
-    local itemIdx = idx
+	local lines = 0
+	local itemIdx = idx
 	if idx ~= nil and idx > 6 then
 		lines = math.ceil(idx / 2) - 3   -- 9: 2, 16: 5
 		itemIdx = (idx - 1) % 2 + 4 + 1  -- 9: 5, 16: 6
-    end
-    return lines, itemIdx
+	end
+	return lines, itemIdx
 end
 
 function BattlePage:linesCalculator(dest, src)
-    local dlines, ditemIdx = self:linesCalculatorInner(dest)
-    local slines, sitemIdx = self:linesCalculatorInner(src)
+	local dlines, ditemIdx = self:linesCalculatorInner(dest)
+	local slines, sitemIdx = self:linesCalculatorInner(src)
 
-    local lineDiff = dlines - slines
-	local pages = math.floor(lineDiff / 3)    -- 9: 0, 16: 1
-	local lines = lineDiff - pages * 3        -- 9: 2, 16: 2
-    return lines, pages, ditemIdx
+	local lineDiff = dlines - slines
+	local pages = math.floor(lineDiff / 3)	-- 9: 0, 16: 1
+	local lines = lineDiff - pages * 3		-- 9: 2, 16: 2
+	return lines, pages, ditemIdx
 end
 
 function BattlePage:lineUp(lines)
-    if lines == 0 then return end
+	if lines == 0 then return end
 	for i = 1,lines do
 		dragDrop(self.dragUpCenter.location, self.lineUpStep.location);
 		wait(0.1)
@@ -171,17 +171,17 @@ function BattlePage:lineUp(lines)
 end
 
 function BattlePage:pageUp(pages)
-    if pages == 0 then return end
+	if pages == 0 then return end
 	for i = 1, pages do
-        dragDrop(self.dragUpCenter.location, self.pageUpStep.location);
+		dragDrop(self.dragUpCenter.location, self.pageUpStep.location);
 		wait(0.1)
-        dragDrop(self.dragUpCenter.location, self.pageUpStep.location);
+		dragDrop(self.dragUpCenter.location, self.pageUpStep.location);
 		wait(0.1)
 	end
 end
 
 function BattlePage:lineDown(lines)
-    if lines == 0 then return end
+	if lines == 0 then return end
 	for i = 1,lines do
 		dragDrop(self.dragDownCenter.location, self.lineDownStep.location);
 		wait(0.1)
@@ -189,11 +189,11 @@ function BattlePage:lineDown(lines)
 end
 
 function BattlePage:pageDown(pages)
-    if pages == 0 then return end
+	if pages == 0 then return end
 	for i = 1, pages do
-        dragDrop(self.dragDownCenter.location, self.pageDownStep.location);
+		dragDrop(self.dragDownCenter.location, self.pageDownStep.location);
 		wait(0.1)
-        dragDrop(self.dragDownCenter.location, self.pageDownStep.location);
+		dragDrop(self.dragDownCenter.location, self.pageDownStep.location);
 		wait(0.1)
 	end
 end
@@ -234,17 +234,48 @@ function BattleScene.new()
  
 	BattleItemRect = Rect(18, 1585, true, 1393, 2302)
 	BattleItemRects = {
-	    Rect( 20, 1584, true, 675, 230),
-	    Rect(718, 1584, true, 675, 230),
-	    Rect( 20, 1827, true, 675, 230),
-	    Rect(718, 1827, true, 675, 230),
-	    Rect( 20, 2070, true, 675, 230),
-	    Rect(718, 2070, true, 675, 230),
+		Rect( 20, 1584, true, 675, 230),
+		Rect(718, 1584, true, 675, 230),
+		Rect( 20, 1827, true, 675, 230),
+		Rect(718, 1827, true, 675, 230),
+		Rect( 20, 2070, true, 675, 230),
+		Rect(718, 2070, true, 675, 230),
 	}
    
 	self.page = BattlePage(BattleItemRect, BattleItemRects)
 	
 	return self
+end
+
+--[[
+    submit(1,3,-100,4)  means launch 1,3 together and wait 100ms, then launch 4
+--]]
+function BattleScene:submit(...)
+	local s = table.getn(arg)
+	local touchList = {}
+	for i = 1, s do
+	    -- Negative means 'wait'
+		if arg[i] <= 0 then
+			table.insert(touchList, {action = "wait", target = (-arg[i] / 1000)})
+		else
+			local unit = self.units[arg[i]]
+			local center = unit.center.location
+			table.insert(touchList, {action = "touchDown", target = center})
+			table.insert(touchList, {action = "wait", target = 0.00001})
+			table.insert(touchList, {action = "touchUp", target = center})
+
+--[[        Skip wait between each unit's launching for 'Spark Chain'
+			if arg[i+1] ~= nil then
+				-- if has next action, do wait.  If next action is wait, skip wait.
+				if arg[i+1] <= 0 then
+					-- Next is not wait, use default wait for a frame (60FPS).
+					table.insert(touchList, {action = "wait", target = 0.00001})
+				end
+			end
+--]]
+		end
+	end
+	manualTouch(touchList)
 end
 
 function BattleScene:chooseByImage(pattern)
@@ -255,3 +286,5 @@ function BattleScene:chooseByImage(pattern)
 	end
 	return true
 end
+
+

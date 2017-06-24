@@ -61,63 +61,12 @@ function isdoublequote(c)
 end
 
 function iseol(c)
-    return c == 10 or c == 13 -- 34 is the double quote '"'.
+    return c == 10 or c == 13
 end
 
 function iswhitespace(c)
     return c == 32 or c == 11 or iseol(c)
 end
-
-
-DefaultInterpreter = {
-    ["u"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("unit" .. num)
-        return false
-    end,
-    ["a"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("action" .. num)
-        return false
-    end,
-    ["i"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("index" .. num)
-        return false
-    end,
-    ["t"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("target" .. num)
-        return false
-    end,
-    ["l"] = function(holder, arg)
-        if not arg then return true end -- expect a argument
-        print("launch" .. arg)
-        return false
-    end,
-    ["d"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("delay" .. num)
-        return false
-    end,
-    ["w"] = function(holder, num)
-        if not num then return true end -- expect a number
-        print("wait" .. num)
-        return false
-    end,
-    ["s"] = function(holder)
-        print("start")
-        return false
-    end,
-    ["e"] = function(holder)
-        print("end")
-        return false
-    end,
-    ["q"] = function(holder)
-        print("quit")
-        return false
-    end,
-}
 
 function decode(syntax, str, _holder)
     if not str then print("The code is not a string") return end
@@ -129,8 +78,15 @@ function decode(syntax, str, _holder)
 
     local strindex = 1
     local current = false
+    local lineCount = 1
+    local charCount = 1
     function getNext()
         current = byteStr[strindex]  -- if overflow, return nil...
+        charCount = charCount + 1
+        if iseol(current) then
+            lineCount = lineCount + 1
+            charCount = 0
+        end
         strindex =  strindex + 1
         return current
     end
@@ -139,21 +95,21 @@ function decode(syntax, str, _holder)
         local buffer = {}
         local bufferIndex = 1
         if current == nil then
-            return nil, nil
+            return {'EOF', 'EOF'}
         end
 
         if isalpha(current) then
             -- one alpha one code.
             buffer[1] = current
             getNext()
-            return 'code', string.char(unpack(buffer))
+            return {'code', string.char(unpack(buffer)), lineCount}
         end
         if isnumber(current) then
             repeat
                 buffer[bufferIndex] = current
                 bufferIndex = bufferIndex + 1
             until (not isnumber(getNext()))
-            return 'number', string.char(unpack(buffer))
+            return {'number', string.char(unpack(buffer)), lineCount}
         end
         if issinglequote(current) then
             repeat
@@ -161,7 +117,7 @@ function decode(syntax, str, _holder)
                 getNext()
             until issinglequote(current) or iseol(current)
             getNext()  -- skip quote itself
-            return 'quote', nil
+            return {'quote'}
         end
         if isdoublequote(current) then
             repeat
@@ -169,56 +125,115 @@ function decode(syntax, str, _holder)
                 getNext()
             until isdoublequote(current) or iseol(current)
             getNext()  -- skip quote itself
-            return 'quote', nil
+            return {'quote'}
         end
         if iswhitespace(current) then
             -- force skip all white space, including then eol.
             repeat until (not iswhitespace(getNext()))
-            return 'white', nil
+            return {'white'}
         end
         -- ignored
         local tmp = current
         getNext() -- skip this
-        return 'others', tmp
-    end 
+        return {'others', tmp, 0}
+    end
+
+    function reportError(msg)
+        print("syntax error:" .. lineCount .. ":" .. charCount)
+        if msg then
+            print("    " .. msg)
+        end
+    end
 
     getNext()
-    local currentCode = nil
     local holder = {}  -- holder is used to keep data.
     if _holder ~= nil then
         holder = _holder
     end
 
     holder.init = false
+--[[
+    Each codeBuffer element has both id and data(code/number), data will not be
+    nil.
+    
+    Syntax start at BOF (Begining of File), and end at EOF (End of File).
+--]]
+    
+    local codeBuffer = {}
     local hasError = false
-    local expectNext = false
+    local consumption = 0
+    local msg = ""
+    local hadEOF = false
+    local lastCodeBufferSize = 0  -- prevent endless loop
+    
+    table.insert(codeBuffer, {'BOF', 'BOF'})
     repeat
-        id, buffer = parser()
-        if id == nil then
-            break
-        end
-        if id == 'code' or id == 'number' then
-            if currentCode then
-                expectNext, hasError = syntax[currentCode](holder, buffer)
-                expectNext = false
-                currentCode = nil
-            else
-                if id == 'code' then
-                    expectNext, hasError = syntax[buffer](holder)
-                    if expectNext then
-                        currentCode = buffer
-                    end
-                else
-                    print("syntax error at charactor:" .. strindex - 1)
-                end
+--[[
+    Collect a pair of command and call correspond syntax
+    Expect the syntax will return consumed codeBuffer size.
+    If consumed size is zero and has no error, suppose the command need more in
+    the Buffer.
+--]]
+        local code = {}
+        if not hadEOF then
+            code = parser()
+            local id = code[1]
+            if id == 'EOF' then
+                hadEOF = true
+                table.insert(codeBuffer, code)
+            elseif id == 'code' or id == 'number' then
+                table.insert(codeBuffer, code)
             end
         end
-        if hasError then
-            print("syntax error at charactor:" .. strindex - 1)
-            break
+
+        -- consume all commands in the buffer once parser()
+        repeat
+
+        if codeBuffer ~= nil and table.getn(codeBuffer) > 0 then
+            if codeBuffer[1][1] == 'number' then
+                hasError = true
+                msg = "Meaning less number"
+                break
+            end
+
+            consumption, hasError, msg =
+                syntax[codeBuffer[1][2]](holder, codeBuffer)
+
+            if hasError then
+                break -- break consumption loop
+            else
+                if consumption > 0 then
+                    for i = 1, consumption do
+                        table.remove(codeBuffer, 1)
+                    end
+                end
+            end
+        else
+            consumption = 0
         end
-    until (id == nil)
-    syntax["EOF"](holder)
+
+        until (consumption == 0)
+
+        if hasError then
+            reportError(msg)
+            break  -- break the parser loop
+        end
+
+        if hadEOF then
+            -- Avoid endless loop while EOF
+            if lastCodeBufferSize > 0 and
+                lastCodeBufferSize == table.getn(codeBuffer) then
+                reportError("Endless command")
+                print("Dump codeBuffer:")
+                for k,v in ipairs(codeBuffer) do
+                    print("k="..k.." v[1]="..v[1].." v[2]="..v[2])
+                end
+                wait(0.2)
+            end
+        end
+        lastCodeBufferSize = table.getn(codeBuffer)
+    until (lastCodeBufferSize == 0 and hadEOF)
 
     return holder.script
 end
+

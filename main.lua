@@ -56,11 +56,14 @@ require("explore")
 
 dialogInit()
 FUNC=1
+addTextView("Enter LaunchHelper DBS here:")newRow()
+addEditText("LAUNCH_HELPER", "l1 l2 w10 l3 l4 l5")newRow()
+
 addRadioGroup("FUNC", 1)
     addRadioButton("Quest Farming 刷關卡", 1) -- Auto quest farm.  Can cast designed abilities.
     --addRadioButton("Auto Click REPEAT 自動點Repeat", 2) -- Auto click repeat
     addRadioButton("Explorer 自動探索", 3) -- Auto exploration and battle
-    addRadioButton("Designed Battle 施放記憶技能戰鬥", 4) -- cast designed abilities to battle
+    addRadioButton("LaunchHelper點擊助手(DBS)", 4) -- cast designed abilities to battle
     addRadioButton("Arena 鬥技場 施放記憶技能戰鬥", 6) -- cast designed abilitise to battle
     addRadioButton("test", 5)
     newRow()
@@ -70,6 +73,7 @@ MEMORY_MINOR = 1
 DIALOG_OPTION = 1
 addCheckBox("BRIGHTNESS", "螢幕亮度最低 ", true)addCheckBox("IMMERSIVE", "Immersive", true)newRow() -- brightness low
 addCheckBox("DEBUG", "Debug ", true)addCheckBox("PRO", "專業版", false)newRow() -- for PRO version
+
 dialogShow("選擇自動化功能")
 setImmersiveMode(IMMERSIVE)
 
@@ -100,8 +104,10 @@ elseif FUNC == 3 then
     scriptExit("Repeat finish")
 elseif FUNC == 4 then
     db = DesignedBattle(2)
-    db:loop()
-    scriptExit("Repeat finish")
+    db:decodeScript("s"..LAUNCH_HELPER.." e")
+    db:runScript(1)
+    wait(10)
+    scriptExit("")
 elseif FUNC == 6 then
     -- Arena
 	local db = DesignedBattle()
