@@ -264,7 +264,7 @@ function BattleScene:submit(...)
 				-- if has next action, do wait.  If next action is wait, skip wait.
 				if arg[i+1] < 6 then
 					-- Next is not wait, use default wait for a frame (60FPS).
-					table.insert(touchList, {action = "wait", target = 0.0166})
+					--table.insert(touchList, {action = "wait", target = 0.0166})
 				end
 			end
 		end
