@@ -101,7 +101,7 @@ end
 	self.noRoot = NO_ROOT
 	self.raid = RAID
 	if RAID then
-		self.quest = QUEST - 2
+		self.quest = QUEST + 2
 	end
 
 	self.useAbility = BATTLE_ABILITY
