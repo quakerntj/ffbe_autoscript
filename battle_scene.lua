@@ -118,7 +118,7 @@ function BattlePage.new(rect, rects)
 	return self
 end
 
--- Item index is in left-right-nextline order.  And idx count from 1
+-- Item index is         in left-right-nextline order.  And idx count from 1
 function BattlePage:choose(destIdx, srcIdx)
 	--[[
 		For example
@@ -146,20 +146,26 @@ function BattlePage:linesCalculatorInner(idx)
 	local lines = 0
 	local itemIdx = idx
 	if idx ~= nil and idx > 6 then
-		lines = math.ceil(idx / 2) - 3   -- 9: 2, 16: 5
-		itemIdx = (idx - 1) % 2 + 4 + 1  -- 9: 5, 16: 6
-	end
-	return lines, itemIdx
+		lines = math.ceil(idx / 2) - 3
+		itemIdx = (idx - 1) % 2 + 4 + 1
+    end
+    return lines, itemIdx
 end
 
 function BattlePage:linesCalculator(dest, src)
 	local dlines, ditemIdx = self:linesCalculatorInner(dest)
 	local slines, sitemIdx = self:linesCalculatorInner(src)
 
-	local lineDiff = dlines - slines
-	local pages = math.floor(lineDiff / 3)	-- 9: 0, 16: 1
-	local lines = lineDiff - pages * 3		-- 9: 2, 16: 2
-	return lines, pages, ditemIdx
+    local lineDiff = dlines - slines
+	if lineDiff < 0 then
+    	local pages = math.floor(-lineDiff / 3)
+        local lines = lineDiff + pages * 3
+        return lines, -pages, ditemIdx
+    else
+    	local pages = math.floor(lineDiff / 3)
+        local lines = lineDiff - pages * 3
+        return lines, pages, ditemIdx
+    end
 end
 
 function BattlePage:lineUp(lines)
