@@ -53,6 +53,7 @@ function Farmer.new()
 		"IsInBattle",
 		"Battle",
 		"ResultGil",
+		"ResultDamage",
 		"ResultExp",
 		"NoResultItem",
 		"ResultItem",
@@ -85,6 +86,7 @@ end
 	addCheckBox("BATTLE_ABILITY", "使用技能", false)addSpinner("BATTLE_DBS", DBScriptList, DBScriptList[1])newRow()
 	NO_ROOT = false
 	addCheckBox("NO_ROOT", "無道具關卡(如經驗之間)", false)newRow()
+	addCheckBox("RAID", "共鬥活動", false)newRow()
 	STATE = "ChooseLevel"
 	addTextView("Begin STATE")addSpinner("STATE", self.States, 2)newRow()
 	if DEBUG then
@@ -97,6 +99,7 @@ end
 	self.clearLimit = CLEAR_LIMIT
 	self.initlaState = STATE
 	self.noRoot = NO_ROOT
+	self.raid = RAID
 
 	self.useAbility = BATTLE_ABILITY
 	if self.useAbility then
@@ -185,8 +188,16 @@ function Farmer:looper()
 				return "ChooseFriend"
 			end
 			usePreviousSnap(true)
-			if (BUY and BUY_LOOP > 0 and R23_1111:existsClick("Use_Gem.png")) then
-			 usePreviousSnap(false)
+			local pictureUseGem
+			if self.raid then
+				pictureUseGem = "Use_Gem_Raid.png"
+			else
+				pictureUseGem = "Use_Gem.png"
+			end
+			
+			if DEBUG then R23_1111:highlight(self.highlightTime) end
+			if (BUY and BUY_LOOP > 0 and R23_1111:existsClick(pictureUseGem)) then
+				usePreviousSnap(false)
 				wait(1)
 				R24_1211:existsClick("Buy_Yes.png")
 				print("使用寶石回復體力")
@@ -354,7 +365,12 @@ function Farmer:looper()
 		["ResultGil"] = function()
 			-- click "GIL" icon for speed up and skip rank up
 			if DEBUG then ResultGil:highlight(self.highlightTime) end
-			ResultGil:existsClick("ResultGil.png")
+			if ResultGil:existsClick("ResultGil.png") then
+				watchdog:touch()
+				if self.raid then
+					return "ResultDamage"
+				end
+			end
 			usePreviousSnap(true)
 			if DEBUG then R34_1311:highlight(self.highlightTime) end
 			if R34_1311:existsClick("Next1.png") then
@@ -367,6 +383,23 @@ function Farmer:looper()
 			end
 			usePreviousSnap(false)
 			return "ResultGil"
+		end,
+
+		["ResultDamage"] = function()
+			-- For Raid event
+			if DEBUG then ResultDamage:highlight(self.highlightTime) end
+			ResultGil:existsClick("ResultGil.png")
+			usePreviousSnap(true)
+			if ResultDamage:existsClick("Damage.png") then
+				watchdog:touch()
+			end
+
+			if R34_1311:existsClick("Next1.png") then
+				usePreviousSnap(false)
+				return "ResultExp"
+			end
+			usePreviousSnap(false)
+			return "ResultDamage"
 		end,
 
 		["ResultExp"] = function()
