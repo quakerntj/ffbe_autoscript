@@ -114,9 +114,15 @@ You can insert white space and comment to let it more human readable:
 
 * *w#*
 
-  Wait for *#* milliseconds.  The number of milliseconds should be **greater than
-  6**.  In the compiler, for input performance, the number are used with units
-  index, which has a max value, **6**.
+  Wait for *#* milliseconds. Range is start from 0 to MAX_INTEGER.  I didn't
+  check.  Hope you won't try to hang you AnkuLua.
+  
+* *T# #*
+
+  Touch a location of screen.  You can use touch tool in Android Developer Settings
+  to find out the x, y coordinate.  The number after T is the x and y value.
+  You can Touch a place like this:  ``T500 400`` or ``T500,400``.  Inserting a
+  comma can help your reading but take no effect in the DBS.
 
 <!--
 * *d#*
