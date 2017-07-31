@@ -317,6 +317,24 @@ end
 ]]
             return 2, false
         end,
+        ["T"] = function(holder, buffer)
+            local bufferSize = table.getn(buffer)
+            if bufferSize < 3 then return 0, false
+            elseif bufferSize > 3 then return 0, true, "internal error"
+            elseif bufferSize == 3 and ( 
+            	buffer[2][1] ~= 'number' or
+            	buffer[3][1] ~= 'number') then
+                return 0, true, "Expect two number after 'T'"
+            end
+            local x = tonumber(buffer[2][2])
+            local y = tonumber(buffer[3][2])
+            -- TODO Use screen scale to resize x,y.
+            holder.script = holder.script .. [[
+        click(Location(]]..x..[[, ]]..y..[[))
+
+]]
+            return 3, false
+        end,
     }
 end
 
