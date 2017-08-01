@@ -60,6 +60,10 @@ function isdoublequote(c)
     return c == 34 -- 34 is the double quote '"'.
 end
 
+function isgraveaccent(c)
+	return c == 96 -- 96 is the grave accent '`'.
+end
+
 function iseol(c)
     return c == 10 or c == 13
 end
@@ -126,6 +130,17 @@ function decode(syntax, str, _holder)
             until isdoublequote(current) or iseol(current)
             getNext()  -- skip quote itself
             return {'quote'}
+        end
+        if isgraveaccent(current) then
+            getNext() -- skip the first `
+            repeat
+                -- add all text inside the graveaccent
+                buffer[bufferIndex] = current
+                bufferIndex = bufferIndex + 1
+                getNext()
+            until isgraveaccent(current)
+            getNext()  -- skip ` itself
+            return {'code', "`", lineCount, string.char(unpack(buffer))}
         end
         if iswhitespace(current) then
             -- force skip all white space, including then eol.

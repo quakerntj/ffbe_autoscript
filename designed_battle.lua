@@ -317,13 +317,14 @@ end
 ]]
             return 2, false
         end,
+
         ["T"] = function(holder, buffer)
             local bufferSize = table.getn(buffer)
             if bufferSize < 3 then return 0, false
             elseif bufferSize > 3 then return 0, true, "internal error"
             elseif bufferSize == 3 and ( 
-            	buffer[2][1] ~= 'number' or
-            	buffer[3][1] ~= 'number') then
+                    buffer[2][1] ~= 'number' or
+                    buffer[3][1] ~= 'number') then
                 return 0, true, "Expect two number after 'T'"
             end
             local x = tonumber(buffer[2][2])
@@ -334,6 +335,14 @@ end
 
 ]]
             return 3, false
+        end,
+
+        ["`"] = function(holder, buffer)
+            -- Insert lua script directly in DBS
+            if buffer[1][4] ~= nil then
+                holder.script = holder.script .. buffer[1][4]
+            end
+            return 1, false
         end,
     }
 end
